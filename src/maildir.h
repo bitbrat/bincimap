@@ -45,8 +45,8 @@
 #include "maildirmessage.h"
 
 namespace Binc {
-  static const std::string CACHEFILEVERSION = "1.0.4";
-  static const std::string UIDVALFILEVERSION = "1.0.4";
+  static const std::string CACHEFILEVERSION = "1.0.5";
+  static const std::string UIDVALFILEVERSION = "1.0.5";
   
   //------------------------------------------------------------------------
   class MaildirIndexItem {
