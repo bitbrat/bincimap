@@ -193,6 +193,7 @@ install man/bincimap.conf.5	$MAN/man5
 - Fixed a mistake with handling the new command line parser. The
   precedence of global config, command line arguments and local config
   are now identical to that in 1.2.6.
+- Released 1.2.7beta5-1
 
 * Thu Mar 04 2004 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
 - configure.in now also searches correctly for the OpenSSL include
