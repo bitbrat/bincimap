@@ -16,17 +16,17 @@ SUBDIRS=log
 
 #--------------------------------------------------------------------------
 install-exec-hook:
-	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)/service/imap
+	$(mkinstalldirs) $(DESTDIR)$(localstatedir)/service/imap
 
-	@if [ ! -e $(DESTDIR)$(sysconfdir)/service/imap/run ]; then $(INSTALL_DATA) -m 0755 $(srcdir)/run $(DESTDIR)$(sysconfdir)/service/imap/run;  else $(INSTALL_DATA) -m 0755 $(srcdir)/run $(DESTDIR)$(sysconfdir)/service/imap/run.new; echo "- New service/imap/run file saved as $(DESTDIR)$(sysconfdir)/service/imap/run.new" >> $(srcdir)/../install.log; fi;
-	$(INSTALL_DATA) -m 0644 $(srcdir)/down $(DESTDIR)$(sysconfdir)/service/imap/down
-	$(mkinstalldirs) $(DESTDIR)$(sysconfdir)/service/imaps
-	@if [ ! -e $(DESTDIR)$(sysconfdir)/service/imaps/run ]; then $(INSTALL_DATA) -m 0755 $(srcdir)/run-ssl $(DESTDIR)$(sysconfdir)/service/imaps/run;  else $(INSTALL_DATA) -m 0755 $(srcdir)/run-ssl $(DESTDIR)$(sysconfdir)/service/imaps/run.new; echo "- New service/imaps/run file saved as $(DESTDIR)$(sysconfdir)/service/imaps/run.new" >> $(srcdir)/../install.log; fi;
-	$(INSTALL_DATA) -m 0644 $(srcdir)/down $(DESTDIR)$(sysconfdir)/service/imaps/down
+	@if [ ! -e $(DESTDIR)$(localstatedir)/service/imap/run ]; then $(INSTALL_DATA) -m 0755 $(srcdir)/run $(DESTDIR)$(localstatedir)/service/imap/run;  else $(INSTALL_DATA) -m 0755 $(srcdir)/run $(DESTDIR)$(localstatedir)/service/imap/run.new; echo "- New service/imap/run file saved as $(DESTDIR)$(localstatedir)/service/imap/run.new" >> $(srcdir)/../install.log; fi;
+	$(INSTALL_DATA) -m 0644 $(srcdir)/down $(DESTDIR)$(localstatedir)/service/imap/down
+	$(mkinstalldirs) $(DESTDIR)$(localstatedir)/service/imaps
+	@if [ ! -e $(DESTDIR)$(localstatedir)/service/imaps/run ]; then $(INSTALL_DATA) -m 0755 $(srcdir)/run-ssl $(DESTDIR)$(localstatedir)/service/imaps/run;  else $(INSTALL_DATA) -m 0755 $(srcdir)/run-ssl $(DESTDIR)$(localstatedir)/service/imaps/run.new; echo "- New service/imaps/run file saved as $(DESTDIR)$(localstatedir)/service/imaps/run.new" >> $(srcdir)/../install.log; fi;
+	$(INSTALL_DATA) -m 0644 $(srcdir)/down $(DESTDIR)$(localstatedir)/service/imaps/down
 
 #--------------------------------------------------------------------------
 uninstall-hook:
-	rm $(DESTDIR)$(sysconfdir)/service/imap/run
-	rm $(DESTDIR)$(sysconfdir)/service/imaps/run
-	rm $(DESTDIR)$(sysconfdir)/service/imap/down
-	rm $(DESTDIR)$(sysconfdir)/service/imaps/down
+	rm $(DESTDIR)$(localstatedir)/service/imap/run
+	rm $(DESTDIR)$(localstatedir)/service/imaps/run
+	rm $(DESTDIR)$(localstatedir)/service/imap/down
+	rm $(DESTDIR)$(localstatedir)/service/imaps/down
