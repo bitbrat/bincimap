@@ -527,8 +527,8 @@ bool Maildir::commitNewMessages(const string &mbox)
       ssid << (int) tv.tv_sec
 	   << "." << (int) session.getPid()
 	   << (attempt == 0 ? "" : ("_" + toString(attempt)))
-	   << "_" << (int) tv.tv_usec 
-	   << (rand() % 0xffff) << "." << session.getHostname();
+	   << "_" << (int) tv.tv_usec
+	   << (rand() % 0xffff) << "_BincIMAP." << session.getHostname();
       
       BincStream ss;
       ss << mbox << "/new/" << ssid.str();
@@ -683,7 +683,7 @@ bool Maildir::fastCopy(Message &m, Mailbox &desttype,
 	 << "." << (int) session.getPid()
 	 << (attempt == 0 ? "" : ("_" + toString(attempt)))
 	 << "_" << (int) tv.tv_usec 
-	 << (rand() % 0xffff) << "." << session.getHostname();
+	 << (rand() % 0xffff) << "_BincIMAP." << session.getHostname();
 
     BincStream ss;
     ss << destname << "/tmp/" << ssid.str();

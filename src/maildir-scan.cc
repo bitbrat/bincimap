@@ -257,7 +257,7 @@ Maildir::ScanResult Maildir::scan(bool forceScan)
     // introduces a special case: we can not cache the old st_ctime
     // and st_mtime. the next time the mailbox is scanned, it must not
     // simply be skipped. :-)
-    if (!forceScan && ::time(0) <= mystat.st_mtime) {
+    if (filename.find("BincIMAP") == string::npos && ::time(0) <= mystat.st_mtime) {
       old_cur_st_mtime = (time_t) 0;
       old_cur_st_ctime = (time_t) 0;
       old_new_st_mtime = (time_t) 0;
