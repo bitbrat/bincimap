@@ -98,6 +98,8 @@ Maildir::ReadCacheResult Maildir::readCache(void)
       uidvalfiledropped = true;
       return NoCache;
     } else if (isdigit(section[0])) {
+      // Perhaps a bit confusing. We need to set all attributes in one
+      // go, so when the section changes, we add the message.
       if (lastsection != section) {
 	lastsection = section;
 	if (_id != "") {
@@ -132,18 +134,20 @@ Maildir::ReadCacheResult Maildir::readCache(void)
   }
 
   // Catch the last message too.
-  if (index.find(_id) == 0) {
-    MaildirMessage m(*this);
-    m.setUnique(_id);
-    m.setInternalDate(_internaldate);
-    m.setUID(_uid);
-    m.setInternalFlag(MaildirMessage::JustArrived);
-    add(m);
+  if (lastsection != "") {
+    if (index.find(_id) == 0) {
+      MaildirMessage m(*this);
+      m.setUnique(_id);
+      m.setInternalDate(_internaldate);
+      m.setUID(_uid);
+      m.setInternalFlag(MaildirMessage::JustArrived);
+      add(m);
+    } else {
+      // Remember to insert the uid of the message again - we reset this
+      // at the top of this function.
+      index.insert(_id, _uid);
+    }
   }
-
-  // Remember to insert the uid of the message again - we reset this
-  // at the top of this function.
-  index.insert(_id, _uid);
 
   if (!cache.eof()) {
     // Assume there is no cache file.
