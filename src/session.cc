@@ -172,10 +172,9 @@ int Session::getReadBytes(void) const
   return readbytes;
 }
 
+//----------------------------------------------------------------------
 bool Session::parseRequestLine(int argc, char * argv[])
 {
-  CommandLineArgs args;
-
   args.addOptional("h|?|help", "Display this help screen", true);
   args.addOptional("v|version", "Display the version of Binc IMAP", true);
   args.addOptional("s|ssl", "Toggle enabling of SSL", true);
@@ -214,8 +213,14 @@ bool Session::parseRequestLine(int argc, char * argv[])
   command.ssl = args["ssl"] == "yes" ? true : false;
   command.configfile = args["conf"];
 
-  string tmp;
+  unparsedArgs = argv + args.argc();
 
+  return true;
+}
+
+//----------------------------------------------------------------------
+void Session::assignCommandLineArgs(void)
+{
   if (args.hasArg("allow-plain"))
     globalconfig["Authentication"]["allow plain auth in non ssl"] = args["allow-plain"];
 
@@ -227,7 +232,7 @@ bool Session::parseRequestLine(int argc, char * argv[])
 
   if (args.hasArg("logtype"))
     globalconfig["Log"]["type"] = args["logtype"];
-  
+
   if (args.hasArg("ip-variable"))
     globalconfig["Log"]["environment ip variable"] = args["ip-variable"];
 
@@ -281,10 +286,6 @@ bool Session::parseRequestLine(int argc, char * argv[])
 
   if (args.hasArg("verify-peer"))
     globalconfig["SSL"]["verify peer"] = args["verify-peer"];
-
-  unparsedArgs = argv + args.argc();
-
-  return true;
 }
 
 //----------------------------------------------------------------------

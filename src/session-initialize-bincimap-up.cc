@@ -127,6 +127,9 @@ bool Session::initialize(int argc, char *argv[])
   // Read configuration settings
   session.initConfig();
 
+  // Let the command line args override the global settings.
+  session.assignCommandLineArgs();
+
   // log settings
   string ipenv = session.globalconfig["Log"]["ip environment variable"];
   // Initialize logger

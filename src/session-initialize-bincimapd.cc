@@ -90,6 +90,9 @@ bool Session::initialize(int argc, char *argv[])
   if (!session.parseRequestLine(argc, argv))
     return false;
 
+  // Assign command line arguments to global config.
+  session.assignCommandLineArgs();
+
   // log settings
   string ipenv = session.globalconfig["Log"]["ip environment variable"];
   // Initialize logger

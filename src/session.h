@@ -40,6 +40,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "argparser.h"
 
 namespace Binc {
 
@@ -74,6 +75,7 @@ namespace Binc {
 
     std::map<std::string, std::map<std::string, std::string> > globalconfig;
     std::map<std::string, std::map<std::string, std::string> > localconfig;
+    CommandLineArgs args;
 
     int timeout() const;
 
@@ -88,6 +90,7 @@ namespace Binc {
     void exportToEnv(void);
     void importFromEnv(void);
     bool parseRequestLine(int argc, char * argv[]);
+    void assignCommandLineArgs(void);
     int getWriteBytes(void) const;
     int getReadBytes(void) const;
     void addWriteBytes(int);
