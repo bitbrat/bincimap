@@ -206,7 +206,8 @@ unsigned int PendingUpdates::flagupdates_const_iterator::second(void) const
 }
 
 //--------------------------------------------------------------------
-bool Binc::pendingUpdates(Mailbox *mailbox, int type, bool rescan, bool showAll)
+bool Binc::pendingUpdates(Mailbox *mailbox, int type, bool rescan, bool showAll,
+			  bool forceScan)
 {
   Session &session = Session::getInstance();
   IO &com = IOFactory::getInstance().get(1);
@@ -215,7 +216,7 @@ bool Binc::pendingUpdates(Mailbox *mailbox, int type, bool rescan, bool showAll)
     return true;
 
   PendingUpdates p;
-  if (!mailbox->getUpdates(rescan, type, p)) {
+  if (!mailbox->getUpdates(rescan, type, p, forceScan)) {
     session.setLastError(mailbox->getLastError());
     return false;
   }

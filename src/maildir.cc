@@ -211,9 +211,9 @@ void Maildir::setPath(const string &path_in)
 
 //------------------------------------------------------------------------
 bool Maildir::getUpdates(bool doscan, unsigned int type,
-			 PendingUpdates &updates)
+			 PendingUpdates &updates, bool forceScan)
 {
-  if (doscan && scan() != Success)
+  if (doscan && scan(forceScan) != Success)
     return false;
 
   unsigned int exists = 0;

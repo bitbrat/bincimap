@@ -113,7 +113,7 @@ namespace {
 // to cur, setting the recent flag in memory only. check for expunged
 // messages. give newly arrived messages uids.
 //------------------------------------------------------------------------
-Maildir::ScanResult Maildir::scan(void)
+Maildir::ScanResult Maildir::scan(bool forceScan)
 {
   IO &logger = IOFactory::getInstance().get(2);
 
@@ -123,7 +123,7 @@ Maildir::ScanResult Maildir::scan(void)
   const string cachefilename = path + "/bincimap-cache";
 
   // check wether or not we need to bother scanning the folder.
-  if (firstscan) {
+  if (firstscan || forceScan) {
     struct stat oldstat;
     if (stat(newpath.c_str(), &oldstat) != 0) {
       setLastError("Invalid Mailbox, " + newpath + ": "
@@ -257,7 +257,7 @@ Maildir::ScanResult Maildir::scan(void)
     // introduces a special case: we can not cache the old st_ctime
     // and st_mtime. the next time the mailbox is scanned, it must not
     // simply be skipped. :-)
-    if (::time(0) <= mystat.st_mtime) {
+    if (!forceScan && ::time(0) <= mystat.st_mtime) {
       old_cur_st_mtime = (time_t) 0;
       old_cur_st_ctime = (time_t) 0;
       old_new_st_mtime = (time_t) 0;

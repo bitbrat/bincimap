@@ -129,7 +129,7 @@ namespace Binc {
     virtual unsigned int getUidValidity(void) const = 0;
 
     virtual bool getUpdates(bool scan, unsigned int type,
-			    PendingUpdates &updates) = 0;
+			    PendingUpdates &updates, bool forceScan) = 0;
 
     virtual void updateFlags(void) = 0;
     virtual void expungeMailbox(void) = 0;

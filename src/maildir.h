@@ -121,7 +121,7 @@ namespace Binc {
     unsigned int getUidNext(void) const;
 
     bool getUpdates(bool doscan, unsigned int type,
-		    PendingUpdates &updates);
+		    PendingUpdates &updates, bool forceScan);
 
     const std::string &getPath(void) const;
     void setPath(const std::string &path_in);
@@ -170,7 +170,7 @@ namespace Binc {
       PermanentError = 2
     };
 
-    ScanResult scan(void);
+    ScanResult scan(bool forceScan = false);
 
     MaildirMessage *get(const std::string &id);
     void add(MaildirMessage &m);
