@@ -79,7 +79,8 @@ make install    # Note: Mac OS X users need to use "sudo make install"
         --sysconfdir arguments to configure.
 
         To set the location of the log directories (with multilog),
-        set --localstatedir.
+        set --localstatedir. This will also be the location of the
+	run scripts (daemontools & xinetd).
 
         If you want smaller binaries, run "make install-strip" instead
         of "make install".
