@@ -1,3 +1,25 @@
+* Tue Mar 02 2004 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
+- COPY now uses the canonical form of the destination mailbox, so copying
+  to "Inbox/go" is interpreted as "INBOX/go".
+- Released 1.2.7beta2-1
+
+* Sun Feb 21 2004 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
+- SELECT also reports RECENT and EXISTS on empty mailboxes.
+- Fixes to the prioritization of default args over command line options.
+- Fixes to configure.in allow correct handling of --with-openssl-libs
+  option.
+- The magic "." mailbox with IMAPdir is now skipped.
+- Added configure.in autocheck for -lsocket.
+- Default values of --localstatedir, --sysconfdir and --datadir fixed.
+- Fixed errors in README and README.SSL.
+- Released 1.2.7beta1-1
+- Fixed more errors in configure.in with detection of SSL libs.
+
+* Tue Feb 10 2004 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
+- Replaced command line parser, as a first step towards completely
+  eliminating all mysterious problems related to the ordering of
+  command line arguments.
+
 * Thu Feb 05 2004 Andreas Aardal Hanssen <andreas-binc at bincimap.org>
 - Released 1.2.6-1
 

@@ -82,7 +82,7 @@ Operator::ProcessResult CopyOperator::process(Depot &depot,
 
   // Get the destination mailbox
   string dmailbox = command.getMailbox();
-  Mailbox *destMailbox = depot.get(dmailbox);
+  Mailbox *destMailbox = depot.get(toCanonMailbox(dmailbox));
   if (destMailbox == 0) {
     session.setResponseCode("TRYCREATE");
     session.setLastError("invalid mailbox " + toImapString(dmailbox));
@@ -99,12 +99,12 @@ Operator::ProcessResult CopyOperator::process(Depot &depot,
     Message &source = *i;
 
     if (srcMailbox->fastCopy(source, *destMailbox,
-			     depot.mailboxToFilename(dmailbox)))
+			     depot.mailboxToFilename(toCanonMailbox(dmailbox))))
       continue;
 
     // Have the destination mailbox create a message for us.
     Message *dest 
-      = destMailbox->createMessage(depot.mailboxToFilename(dmailbox),
+      = destMailbox->createMessage(depot.mailboxToFilename(toCanonMailbox(dmailbox)),
 				   source.getInternalDate());
     if (!dest) {
       session.setLastError(destMailbox->getLastError());
@@ -148,7 +148,7 @@ Operator::ProcessResult CopyOperator::process(Depot &depot,
   }
 
   if (success)
-    if (!destMailbox->commitNewMessages(depot.mailboxToFilename(dmailbox))) {
+    if (!destMailbox->commitNewMessages(depot.mailboxToFilename(toCanonMailbox(dmailbox)))) {
       session.setLastError("Failed to commit after successful copy: "
 			   + destMailbox->getLastError());
       return NO;
