@@ -197,6 +197,7 @@ install man/bincimap.conf.5	$MAN/man5
 - The magic "." mailbox with IMAPdir is now skipped.
 - Added configure.in autocheck for -lsocket.
 - Default values of --localstatedir, --sysconfdir and --datadir fixed.
+- Fixed errors in README and README.SSL.
 
 * Tue Feb 10 2004 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
 - Replaced command line parser, as a first step towards completely

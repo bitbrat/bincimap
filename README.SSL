@@ -29,6 +29,11 @@ http://www.lifewithbincimap.org/
 0. Introduction
 ---------------
 
+The are two ways to enable SSL on Binc IMAP. One is to use an SSL
+tunnel (http://www.stunnel.org/), the other is to use Binc IMAP's
+native SSL support. If you compiled Binc with SSL support, the latter
+is much easier to set up.
+
 To use SSL with Binc IMAP, you need a private key and a certificate.
 
 A private key is a random string of bits that is secret to your host.
@@ -38,8 +43,8 @@ significant security for your users.
 The certificate is among the first things the server sends to a
 client. The client uses this certificate to make certain that it is
 communicating with the correct host. To do this, it needs to check the
-certificate with a trusted third party, usually via a separate
-Internet connection.
+certificate with a trusted third party certificate, known as a CA
+certificate.
 
 There are in general two types of certificates:
 
@@ -126,24 +131,10 @@ You're now ready to test Binc IMAP with SSL.
    one's own CA.
 ------------------------------------------------------------------
 
-Quick hit: "make cacert".
+Look up the guides on LifeWithBincIMAP.org:
 
-First you need to generate a CA certificate. This command creates such
-a certificate and places it in a file called "ca.pem":
-
-openssl req -out ca.pem -new -x509
-
-Using this CA certificate, we can generate a private key and a
-_signed_ certificate, like this:
-
-openssl req -newkey rsa:1024 -keyout bincimap.key -CA ca.pem -nodes -x509 -days 365 -out bincimap.crt
-
-Copy the contents of the generated bincimap.key and bincimap.crt files
-into a file called "bincimap.pem" and place this file at a location
-that is read-only for the bincimap-up process (typically root).
-
-Then edit bincimap.conf, go to the SSL section and set the path of
-this file in the "pem file" option.
+http://lifewithbincimap.org/index.php/Main/DoItYourselfCertificateAuthority
+http://lifewithbincimap.org/index.php/Main/SettingUpYourOwnSSLCertificationAuthority
 
 You're now ready to use Binc IMAP with SSL.
 
@@ -156,4 +147,4 @@ or comments to:
 
 The Binc IMAP mailing list <lists-bincimap@infeline.org>
 
-Author: Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+Author: Andreas Aardal Hanssen <andreas-binc at bincimap.org>
