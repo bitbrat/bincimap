@@ -53,7 +53,6 @@
 
 using namespace ::std;
 using namespace Binc;
-using namespace ArgParser;
 
 extern char **environ;
 

@@ -37,9 +37,9 @@
 
 #ifndef session_h_included
 #define session_h_included
-#include "arg-parser.h"
 #include <string>
 #include <vector>
+#include <map>
 
 namespace Binc {
 
@@ -143,7 +143,6 @@ namespace Binc {
 
     mutable std::string lastError;
     mutable std::string responseCode;
-    ArgParser::Args args;
 
     pid_t pid;
     std::string hostname;

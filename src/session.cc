@@ -37,6 +37,7 @@
 
 #include <syslog.h>
 
+#include "argparser.h"
 #include "io.h"
 #include "session.h"
 #include "storage.h"
@@ -47,7 +48,6 @@
 
 using namespace ::std;
 using namespace Binc;
-using namespace ArgParser;
 
 extern char **environ;
 
@@ -74,7 +74,6 @@ Session &Session::getInstance(void)
 //----------------------------------------------------------------------
 void Session::initConfig(void)
 {
-  args.assign();
 }
 
 //----------------------------------------------------------------------
@@ -175,91 +174,74 @@ int Session::getReadBytes(void) const
 
 bool Session::parseRequestLine(int argc, char * argv[])
 {
-  args = ArgParser::Args(argc, argv);
+  CommandLineArgs args;
 
-  args.addOptional("h|?|help", command.help);
-  args.addOptional("v|version", command.version);
-  args.addOptional("s|ssl", command.ssl);
-  args.addOptional("c|conf", command.configfile);
+  args.addOptional("h|?|help", "Display this help screen", true);
+  args.addOptional("v|version", "Display the version of Binc IMAP", true);
+  args.addOptional("s|ssl", "Toggle enabling of SSL", true);
+  args.addOptional("c|conf", "Sets the path to the config file", false);
+  args.addOptional("a|allow-plain", "Allow authentication when not in SSL", true);
+  args.addOptional("p|auth-penalty", "Sets the auth penalty", false);
+  args.addOptional("d|disable-starttls", "Toggles disabling of STARTTLS", false);
+  args.addOptional("L|logtype", "Sets the method used for logging", false);
+  args.addOptional("I|ip-variable", "Sets the env variable that contains the remote IP", false);
+  args.addOptional("d|depot", "Sets the depot type", false);
+  args.addOptional("M|mailbox-type", "Sets the mailbox tyoe", false);
+  args.addOptional("m|mailbox-path", "Sets the mailbox path", false);
+  args.addOptional("C|create-inbox", "Toggles auto-creating INBOX", false);
+  args.addOptional("S|subscribe-mailboxes", "CSV list of mailboxes to subscribe to", false);
+  args.addOptional("u|umask", "Sets the default umask", false);
+  args.addOptional("J|jail-path", "Sets the jail path", false);
+  args.addOptional("x|jail-user", "Sets the jail user", false);
+  args.addOptional("X|jail-group", "Sets the jail group", false);
+  args.addOptional("i|idle-timeout", "Sets the idle timeout", false); 
+  args.addOptional("t|auth-timeout", "Sets the auth timeout", false); 
+  args.addOptional("T|transfer-timeout", "Sets the transfer timeout", false); 
+  args.addOptional("b|transfer-buffersize", "Sets the transfer buffer size", false); 
+  args.addOptional("p|pem-file", "Sets the path to the SSL PEM file", false);
+  args.addOptional("P|ca-path", "Sets the path to the CA cert file", false);
+  args.addOptional("f|ca-file", "Sets the path to the CA cert directory", false);
+  args.addOptional("l|cipher-list", "Sets the SSL cipher list", false);
+  args.addOptional("V|verify-peer", "Toggles peer verificatin", true);
 
-  // Override config file settings with command line options
-  string arg;
-  args.addOptional("a|allow-plain", 
-		   globalconfig["Authentication"]["allow plain auth in non ssl"]);
-  args.addOptional("p|auth-penalty",
-		   globalconfig["Authentication"]["auth penalty"]);
-  args.addOptional("d|disable-starttls",
-		   globalconfig["Authentication"]["disable starttls"]);
-
-  args.addOptional("L|logtype", globalconfig["Log"]["type"]);
-  args.addOptional("I|ip-variable",
-		   globalconfig["Log"]["environment ip variable"]);
-
-  args.addOptional("d|depot", globalconfig["Mailbox"]["depot"]);
-  args.addOptional("M|mailbox-type", globalconfig["Mailbox"]["type"]);
-  args.addOptional("m|mailbox-path", globalconfig["Mailbox"]["path"]);
-  args.addOptional("C|create-inbox", globalconfig["Mailbox"]["auto create inbox"]);
-  args.addOptional("S|subscribe-mailboxes",
-		   globalconfig["Mailbox"]["auto subscribe mailboxes"]);
-  args.addOptional("u|umask", globalconfig["Mailbox"]["umask"]);
-
-  args.addOptional("J|jail-path", globalconfig["Security"]["jail path"]);
-  args.addOptional("x|jail-user", globalconfig["Security"]["jail user"]);
-  args.addOptional("X|jail-group", globalconfig["Security"]["jail group"]);
-
-  args.addOptional("i|idle-timeout", globalconfig["Session"]["idle timeout"]);
-  args.addOptional("t|auth-timeout", globalconfig["Session"]["auth timeout"]);
-  args.addOptional("T|transfer-timeout", 
-		   globalconfig["Session"]["transfer timeout"]);
-  args.addOptional("b|transfer-buffersize", 
-		   globalconfig["Session"]["transfer buffer size"]);
-
-  args.addOptional("p|pem-file", globalconfig["SSL"]["pem file"]);
-  args.addOptional("P|ca-path", globalconfig["SSL"]["ca path"]);
-  args.addOptional("f|ca-file", globalconfig["SSL"]["ca file"]);
-  args.addOptional("l|cipher-list", globalconfig["SSL"]["cipher list"]);
-  args.addOptional("V|verify-peer", globalconfig["SSL"]["verify peer"]);
-
-  ArgumentError e(ArgParser::ArgumentError::NONE);
-  vector<string> rest;
-
-  int i = args.parse(rest, e);
-  if (i == -1) {
-    string err = e.getErrorStr();
-    if (err == "") {
-      switch (e.getErrorType()) {
-      case ArgParser::ArgumentError::NONE:
-	err = "Unknown error (none)";
-	break;
-      case ArgParser::ArgumentError::CHECK:
-	err = "Syntax error";
-	break;
-      case ArgParser::ArgumentError::REQUIRED_COMMAND:
-	err = "Required command";
-	break;
-      case ArgParser::ArgumentError::REQUIRED_ARGUMENT:
-	err = "Required argument";
-	break;
-      case ArgParser::ArgumentError::UNKNOWN:
-	err = "No such argument";
-	break;
-      case ArgParser::ArgumentError::MISSING:
-	err = "Missing argument";
-	break;
-      case ArgParser::ArgumentError::INVALID:
-	err = "Invalid argument";
-	break;
-      default:
-	break;
-      }
-    }
-
-    setLastError("Command line \"" + e.getName() + "\": " + err);
+  if (!args.parse(argc, argv)) {
+    setLastError("Command line error, " + args.errorString());
     return false;
   }
 
-  unparsedArgs = argv + i;
-  args.assign();
+  command.help = args["help"] == "yes" ? true : false;
+  command.version = args["version"] == "yes" ? true : false;
+  command.ssl = args["ssl"] == "yes" ? true : false;
+  command.configfile = args["conf"];
+  globalconfig["Authentication"]["allow plain auth in non ssl"] = args["allow-plain"];
+  globalconfig["Authentication"]["auth penalty"] = args["auth-penalty"];
+  globalconfig["Authentication"]["disable starttls"] = args["disable-starttls"];
+
+  globalconfig["Log"]["type"] = args["logtype"];
+  globalconfig["Log"]["environment ip variable"] = args["ip-variable"];
+
+  globalconfig["Mailbox"]["type"] = args["mailbox-type"];
+  globalconfig["Mailbox"]["path"] = args["mailbox-path"];
+  globalconfig["Mailbox"]["auto create inbox"] = args["create-inbox"];
+  globalconfig["Mailbox"]["auto subscribe mailboxes"] = args["subscribe-mailboxes"];
+  globalconfig["Mailbox"]["umask"] = args["umask"];
+
+  globalconfig["Security"]["jail path"] = args["jail-path"];
+  globalconfig["Security"]["jail user"] = args["jail-user"];
+  globalconfig["Security"]["jail group"] = args["jail-group"];
+
+  globalconfig["Session"]["idle timeout"] = args["idle-timeout"];
+  globalconfig["Session"]["auth timeout"] = args["auth-timeout"];
+  globalconfig["Session"]["transfer timeout"] = args["transfer-timeout"];
+  globalconfig["Session"]["transfer buffer size"] = args["transfer-buffersize"];
+
+  globalconfig["SSL"]["pem file"] = args["pem-file"];
+  globalconfig["SSL"]["ca path"] = args["ca-path"];
+  globalconfig["SSL"]["ca file"] = args["ca-file"];
+  globalconfig["SSL"]["cipher list"] = args["cipher-list"];
+  globalconfig["SSL"]["verify peer"] = args["verify-peer"];
+
+  unparsedArgs = argv + args.argc();
 
   return true;
 }
