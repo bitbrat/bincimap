@@ -267,17 +267,19 @@ int SSLEnabledIO::fillBuffer(int timeout, bool retry)
     tv.tv_sec = timeout;
     tv.tv_usec = 0;
 
-    int r = ::select(fileno(stdin) + 1, &rfds, 0, 0, timeout ? &tv : 0);
-    if (r == 0) {
-      setLastError("Reading from client timed out.");
-      return -2;
-    }
+    if (pending() == 0) {
+      int r = ::select(fileno(stdin) + 1, &rfds, 0, 0, timeout ? &tv : 0);
+      if (r == 0) {
+        setLastError("Reading from client timed out.");
+        return -2;
+      }
 
-    if (r < 0) {
-      setLastError("Error when reading from client");
-      return -1;
+      if (r < 0) {
+        setLastError("Error when reading from client");
+        return -1;
+      }
     }
-
+    
     char buf[1024];
     unsigned int readBytes = SSL_read(ssl, buf, sizeof(buf));      
     if (readBytes > 0) {
