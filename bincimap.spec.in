@@ -194,6 +194,7 @@ install man/bincimap.conf.5	$MAN/man5
 - Fixes to the prioritization of default args over command line options.
 - Fixes to configure.in allow correct handling of --with-openssl-libs
   option.
+- The magic "." mailbox with IMAPdir is now skipped.
 
 * Tue Feb 10 2004 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
 - Replaced command line parser, as a first step towards completely

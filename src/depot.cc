@@ -558,6 +558,10 @@ string IMAPdirDepot::filenameToMailbox(const string &m) const
   string tmp;
   bool escape = false;
 
+  // hide the magic "." mailbox.
+  if (m == "." || m == "..")
+    return "";
+
   string::const_iterator i = m.begin();
   while (i != m.end()) {
     if (*i == '.') {
