@@ -88,6 +88,23 @@ make install    # Note: Mac OS X users need to use "sudo make install"
         To create a self signed SSL certificate, run "make testcert". Read
         more on SSL certificates in README.SSL.
 
+        "make install" will create the following files:
+
+        /opt/bincimap/bin/bincimap-up
+        /opt/bincimap/bin/bincimapd
+        /opt/bincimap/doc/bincimap-manual.dvi
+        /opt/bincimap/doc/bincimap-manual.ps
+        /etc/opt/bincimap/bincimap.conf
+        /etc/opt/bincimap/xinetd/imap
+        /etc/opt/bincimap/xinetd/imaps
+        /etc/opt/bincimap/scripts/checkpassword.pl
+        /etc/opt/bincimap/scripts/tomaildir++
+        /etc/opt/bincimap/scripts/toimapdir
+        /var/opt/bincimap/service/imap/run
+        /var/opt/bincimap/service/imap/log/run
+        /var/opt/bincimap/service/imaps/run
+        /var/opt/bincimap/service/imaps/log/run
+
 --------------------------------
 2) Apply necessary configuration
 --------------------------------
@@ -141,21 +158,17 @@ service xinetd restart
 
         With daemontools' supervise:
 
-        Edit /etc/opt/bincimap/service/imap/run,
-        /etc/opt/bincimap/service/imap/log/run,
-        /etc/opt/bincimap/service/imaps/run and
-        /etc/opt/bincimap/service/imaps/log/run and
+        Edit /var/opt/bincimap/service/imap/run,
+        /var/opt/bincimap/service/imap/log/run,
+        /var/opt/bincimap/service/imaps/run and
+        /var/opt/bincimap/service/imaps/log/run and
         check that the locations are correct.
         Note the location of your authenticator in particular.
 
         Then copy or symlink the service files in place.
 
-ln -s /etc/opt/bincimap/service/imap /service/imap
-ln -s /etc/opt/bincimap/service/imaps /service/imaps
-
-        There are 'down' files in both service directories,
-        so you will have to run 'svc -u' on both services (and
-        log files) to get them running.
+ln -s /var/opt/bincimap/service/imap /service/imap
+ln -s /var/opt/bincimap/service/imaps /service/imaps
 
 ----------------------------
 4) Securing your service
