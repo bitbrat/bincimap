@@ -10,7 +10,7 @@ dnl USA.
 
 dnl Process this file with autoconf to produce a configure script.
 dnl AC_PREREQ(2.57)
-AC_INIT(bincimap, 1.2.7beta1, bincimap@andreas.hanssen.name)
+AC_INIT(bincimap, 1.2.7beta2, bincimap@andreas.hanssen.name)
 AC_CONFIG_SRCDIR([config.h.in])
 AM_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
@@ -160,7 +160,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_ARG_WITH(openssl-lib,
 	 AC_HELP_STRING([--with-openssl-lib], [Set path to OpenSSL libraries]),
-	 [ if [[ "x$withval" != "xno" -a "x$withval" != "xyes" ]]; then LDFLAGS="$LDFLAGS -L$withval"; SSLLIBS=$withval; fi ],)
+	 [ if [[ "x$withval" != "xno" -a "x$withval" != "xyes" ]]; then LDFLAGS="$LDFLAGS -L$withval"; SSLLIBPATH=$withval; fi ],)
 
 AC_ARG_WITH(openssl-include,
 	 AC_HELP_STRING([--with-openssl-include], [Set path to OpenSSL headers]),
@@ -172,40 +172,43 @@ AC_HELP_STRING([--without-ssl], [Disable SSL support]),
             [ if [[ "x$withval" != "xno" ]]; then WITH_SSL=1; fi ],
             WITH_SSL=1)
 
-AC_MSG_CHECKING(whether -lsocket is available)
-export LDTMP=$LDFLAGS
-export LDFLAGS="-lsocket"
-AC_TRY_LINK([], [], LIBSOCKET="-lsocket"; AC_MSG_RESULT(yes), AC_MSG_RESULT(no))
-export LDFLAGS=$LDTMP
-
-AC_MSG_CHECKING(for OpenSSL libraries)
 if [[ "$WITH_SSL" = "1" ]]; then
   AC_LANG_CPLUSPLUS
-  
-  AC_DEFINE(WITH_SSL, 1, [Define to 1 if SSL support is included.])
+  AC_MSG_CHECKING(whether -lsocket is available)
+  export LDTMP=$LIBS
+  export LIBS="$LIBS -lsocket"
+  AC_TRY_LINK([], [], LIBSOCKET="-lsocket"; AC_MSG_RESULT(yes), AC_MSG_RESULT(no))
+  export LIBS=$LDTMP
 
+  AC_MSG_CHECKING(for OpenSSL libraries)
+  export LIBTMP=$LIBS
   export LDTMP=$LDFLAGS
-  for k in found $SSLLIBS /usr/lib /usr/local/lib /usr/local/ssl/lib /usr/local/openssl/lib /opt/ssl/lib /opt/openssl/lib; do
-      export LDFLAGS="-L$k $LDTMP -lssl -lcrypto $LIBSOCKET"
+  for k in found $SSLLIBPATH /usr/lib /usr/local/lib /usr/local/ssl/lib /usr/local/openssl/lib /opt/ssl/lib /opt/openssl/lib; do
+      export LDFLAGS="$LDTMP -L$k"
+      export LIBS="$LIBTMP -lssl -lcrypto $LIBSOCKET"
       AC_TRY_LINK([#include <openssl/ssl.h>], [SSL_write(0, 0, 0);], LIBSSL="-L$k -lssl -lcrypto $LIBSOCKET"; AC_MSG_RESULT($k), [])
       if [[ "x$LIBSSL" != "x" ]]; then break; fi
   done
+  export LIBS=$LIBTMP
+  export LDFLAGS=$LDTMP
 
   if [[ "x$LIBSSL" = "x" ]]; then
       AC_MSG_RESULT(not found)
-      AC_MSG_ERROR([Unable to find the ssl library which is part of OpenSSL. You want want to look up the FAQ to learn more about this requirement and how to deal with it. Or run configure with --without-ssl.])
+      AC_MSG_WARN([Unable to find the ssl library which is part of OpenSSL. You want want to look up the FAQ to learn more about this requirement and how to deal with it. For now, SSL is disabled.])
+  else
+      AC_DEFINE(WITH_SSL, 1, [Define to 1 if SSL support is included.])
   fi
 
   AC_LANG_C
 else
   AC_MSG_RESULT(no)
 fi
+AC_SUBST(LIBSSL)
 
 dnl ---------------------------------------------------------------------------
 
 AC_CHECK_LIB(dl, dlopen, LIBDL=-ldl, LIBDL=)
 AC_SUBST(LIBDL)
-AC_SUBST(LIBSSL)
 
 dnl ---------------------------------------------------------------------------
 
