@@ -189,6 +189,9 @@ install man/bincimap.conf.5	$MAN/man5
 #-----------------------------------------------------------------------
 %changelog
 
+* Thu Feb 05 2004 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
+- Released 1.2.6-1
+
 * Tue Feb 03 2004 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
 - Obfuscated email addresses in AUTHORS and sources files.
 - Removed tests directory from distribution
