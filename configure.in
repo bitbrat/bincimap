@@ -82,7 +82,7 @@ dnl ---------------------------------------------------------------------------
 prefix=$(eval echo $(eval echo ${prefix}))
 AC_MSG_CHECKING(--prefix)
 if [[ "x$prefix" = "xNONE" ]]; then
-   AC_MSG_RESULT([unset, defaulting to /opt/bincimap])
+   AC_MSG_RESULT([/opt/bincimap])
    prefix=/opt/bincimap
    AC_SUBST(prefix)
 else
@@ -93,8 +93,8 @@ dnl ---------------------------------------------------------------------------
 
 sysconfdir=$(eval echo $(eval echo ${sysconfdir}))
 AC_MSG_CHECKING(--sysconfdir)
-if [[ "x$sysconfdir" = "xNONE/etc" ]]; then
-   AC_MSG_RESULT([unset, defaulting to /etc/opt/bincimap])
+if [[ "x$sysconfdir" = "x$prefix/etc" ]]; then
+   AC_MSG_RESULT([/etc/opt/bincimap])
    sysconfdir=/etc/opt/bincimap
    AC_SUBST(sysconfdir)
 else
@@ -105,8 +105,8 @@ dnl ---------------------------------------------------------------------------
 
 localstatedir=$(eval echo $(eval echo ${localstatedir}))
 AC_MSG_CHECKING(--localstatedir)
-if [[ "x$localstatedir" = "xNONE/var" ]]; then
-   AC_MSG_RESULT([unset, defaulting to /var/opt/bincimap])
+if [[ "x$localstatedir" = "x$prefix/var" ]]; then
+   AC_MSG_RESULT([/var/opt/bincimap])
    localstatedir=/var/opt/bincimap
    AC_SUBST(localstatedir)
 else
@@ -117,8 +117,8 @@ dnl ---------------------------------------------------------------------------
 
 datadir=$(eval echo $(eval echo ${datadir}))
 AC_MSG_CHECKING(--datadir)
-if [[ "x$datadir" = "xNONE/share" ]]; then
-   AC_MSG_RESULT([unset, defaulting to /var/opt/bincimap])
+if [[ "x$datadir" = "x$prefix/share" ]]; then
+   AC_MSG_RESULT([/var/opt/bincimap])
    datadir=/var/opt/bincimap
    AC_SUBST(datadir)
 else
