@@ -10,7 +10,7 @@ dnl USA.
 
 dnl Process this file with autoconf to produce a configure script.
 dnl AC_PREREQ(2.57)
-AC_INIT(bincimap, 1.2.6beta4, bincimap@andreas.hanssen.name)
+AC_INIT(bincimap, 1.2.6beta5, bincimap@andreas.hanssen.name)
 AC_CONFIG_SRCDIR([config.h.in])
 AM_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
