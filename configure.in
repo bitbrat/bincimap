@@ -172,6 +172,12 @@ AC_HELP_STRING([--without-ssl], [Disable SSL support]),
             [ if [[ "x$withval" != "xno" ]]; then WITH_SSL=1; fi ],
             WITH_SSL=1)
 
+AC_MSG_CHECKING(whether -lsocket is available)
+export LDTMP=$LDFLAGS
+export LDFLAGS="-lsocket"
+AC_TRY_LINK([], [], LIBSOCKET="-lsocket"; AC_MSG_RESULT(yes), AC_MSG_RESULT(no))
+export LDFLAGS=$LDTMP
+
 AC_MSG_CHECKING(for OpenSSL libraries)
 if [[ "$WITH_SSL" = "1" ]]; then
   AC_LANG_CPLUSPLUS
@@ -180,8 +186,8 @@ if [[ "$WITH_SSL" = "1" ]]; then
 
   export LDTMP=$LDFLAGS
   for k in found $SSLLIBS /usr/lib /usr/local/lib /usr/local/ssl/lib /usr/local/openssl/lib /opt/ssl/lib /opt/openssl/lib; do
-      export LDFLAGS="-L$k $LDTMP -lssl -lcrypto"
-      AC_TRY_LINK([#include <openssl/ssl.h>], [SSL_write(0, 0, 0);], LIBSSL="-L$k -lssl -lcrypto"; AC_MSG_RESULT($k), [])
+      export LDFLAGS="-L$k $LDTMP -lssl -lcrypto $LIBSOCKET"
+      AC_TRY_LINK([#include <openssl/ssl.h>], [SSL_write(0, 0, 0);], LIBSSL="-L$k -lssl -lcrypto $LIBSOCKET"; AC_MSG_RESULT($k), [])
       if [[ "x$LIBSSL" != "x" ]]; then break; fi
   done
 
