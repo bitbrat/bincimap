@@ -1,3 +1,9 @@
+* Sun Apr 18 2004 Andreas Aardal Hanssen <andreas-binc at bincimap.org>
+- Released 1.2.7final
+
+* Mon Apr 12 2004 Andreas Aardal Hanssen <andreas-binc at bincimap.org>
+- Added Gerrit's patch to compile on certain 64bit architectures.
+
 * Sun Apr 03 2004 Andreas Aardal Hanssen <andreas-binc at bincimap.org>
 - No longer wastes time in configure step checking for features that
   we don't check defines for in the sources.

@@ -188,6 +188,9 @@ install man/bincimap.conf.5	$MAN/man5
 #-----------------------------------------------------------------------
 %changelog
 
+* Sun Apr 18 2004 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
+- Released 1.2.7final
+
 * Mon Apr 12 2004 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
 - Added Gerrit's patch to compile on certain 64bit architectures.
 

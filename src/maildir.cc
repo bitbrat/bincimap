@@ -515,8 +515,10 @@ bool Maildir::commitNewMessages(const string &mbox)
   while (!abort && i != newMessages.end()) {
     MaildirMessage &m = *i;
 
-    if (m.getInternalFlags() & MaildirMessage::Committed)
+    if (m.getInternalFlags() & MaildirMessage::Committed) {
+      ++i;
       continue;
+    }
 
     m.setInternalFlag(MaildirMessage::Committed);
 
