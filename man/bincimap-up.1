@@ -1,0 +1,280 @@
+.TH bincimap-up 1
+.SH "NAME"
+bincimap-up \- Authentication stub for Binc IMAP
+
+.SH "SYNOPSIS"
+.B bincimap-up [ options... ] -- <authenticator> bincimapd
+
+.SH "DESCRIPTION"
+
+For more information about Binc IMAP, see the
+.B bincimapd
+man pages.
+
+To configure this stub, use either command line arguments, config file
+entries, or a
+.B combination
+of both. A subset of the config file options is available as command
+line options.
+
+Note that command line arguments always override config file options.
+
+.SH "OPTIONS"
+
+Long options are not supported on all platforms, so if you experience
+problems with them, please use the short options instead.
+
+.TP
+\fB\-a, \-\-allow-plain\fR
+If set, allows plain text authentication in an unencrypted (SSL/TLS)
+IMAP session.
+
+.TP
+\fB\-p, \-\-auth-penalty=<n>\fR
+Server will sleep for <n> seconds if the client issues a
+username/password pair that fails to authenticate.
+
+.TP
+\fB\-t, \-\-auth-timeout=<n>\fR
+When the server is in unauthenticated mode, and does not detect any
+client activity, it will wait <n> seconds before closing (t/o) the
+connection. <n> can not be less than 30 seconds.
+
+.TP
+\fB\-f, \-\-ca-file=<file>\fR
+A file used to list certificate authorities in. It is sent to the
+client to help the client verify the SSL certificate.
+
+.TP
+\fB\-P, \-\-ca-path=<path>\fR
+A path used by the underlying SSL support to search for files with
+certificate authorities.
+
+.TP
+\fB\-l, \-\-cipher-list=<ciphers>\fR
+Sets the list of available SSL ciphers.
+
+.TP
+\fB\-c, \-\-conf=<file>\fR
+Location of
+.I bincimap.conf
+file.
+
+.TP
+\fB\-C, \-\-create-inbox\fR
+If set, server will create the default mailbox
+.B INBOX
+on first login if it does not exist.
+
+.TP
+\fB\-d, \-\-disable-starttls\fR
+Do not advertise the STARTTLS capability. Use this when running Binc
+IMAP in plain text over an already SSL encrypted tunnel. Default:
+.B no.
+
+.TP
+\fB\-h, -?, \-\-help\fR
+Displays basic usage.
+
+.TP
+\fB\-I, \-\-ip\-variable=<var>\fR
+For logging, suggests an environment variable that contains the
+remote host IP address.
+
+.TP
+\fB\-i, \-\-idle-timeout=<n>\fR
+When the server is in authenticated mode, and does not detect any
+client activity, it will wait <n> seconds before closing (t/o) the
+connection. <n> can not be less than 1800 seconds.
+
+.TP
+\fB\-J, \-\-jail-path=<path>\fR
+Which path bincimap-up should chroot to after starting bincimapd.
+
+.TP
+\fB\-K, \-\-jail-user=<userid>\fR
+Which user bincimap-up should become after starting bincimapd.
+
+.TP
+\fB\-j, \-\-jail-group=<groupid>\fR
+Which user bincimap-up should become after starting bincimapd.
+
+.TP
+\fB\-L, \-\-logtype=[syslog|multilog]\fR
+Which method
+.B Binc IMAP
+should use to log.
+.I syslog
+means to connect to syslog.
+.I multilog
+means to log to stderr(2). Typically used together with
+the
+.I multilog
+utility. For xinetd, use
+.I syslog.
+For daemontools/supervise, use
+.I multilog. Default:
+.B syslog.
+
+.TP
+\fB\-m, \-\-mailbox-path=<path>\fR
+Path to mailbox relative from user's home area. Typically
+.B Maildir
+for Maildir mailboxes, or the empty string "" if the home area is
+equivalent to the Maildir directory.
+
+.TP
+\fB\-M, \-\-mailbox-type=<type>\fR
+Which type of mailbox should the server use? Currently only supports
+.B Maildir.
+
+.TP
+\fB\-p, \-\-pem-file=<file>\fR
+The path to the SSL certificate file, in PEM format.
+
+.TP
+\fB\-s, \-\-ssl\fR
+If set,
+.B Binc
+will go straight into SSL server mode. If this option
+is not passed,
+.B Binc
+will still advertise
+.B STARTTLS,
+allowing clients to switch to SSL on need. Use
+.B \-\-ssl
+if running
+.B Binc
+on port
+.B 993.
+
+.TP
+\fB\-S, \-\-subscribe-mailboxes=<mailboxes>\fR 
+If present, server will
+automatically subscribe client to the given list of mailboxes on first
+login. Mailbox list is given as a comma separated list with the
+mailbox' full path, for example
+.I INBOX,INBOX.Sent-Mail,INBOX.Trash
+.
+
+.TP
+\fB\-b, \-\-transfer-buffersize=<n>\fR
+The server will buffer up to <n> bytes of data before sending it off
+to the client. A lower value will give smoother response from the
+server, but is a bad idea for clients with a big RTT (for example
+dial-ins). A high value gives better throughput, but a more bulky
+transfer.
+
+.TP
+\fB\-T, \-\-transfer-timeout=<n>\fR
+The server writes data to the client in bulks. Each bulk gets <n>
+seconds to complete before the server times out.
+
+.TP
+\fB\-u, \-\-umask=<umask>\fR
+Server will use this umask throughout session. Defaults to user's
+default umask.
+
+
+.TP
+\fB\-V, \-\-verify-peer\fR
+If set, server will attempt to verify peer certificate.
+
+.TP
+\fB\-v, \-\-version\fR
+Shows Binc IMAP version.
+
+.TP
+\fB\-\-\fR
+Marks the end of options to
+.B bincimap-up.
+After this comes the checkpassword compatible authenticator.
+
+.TP
+\fB(trailing arguments)\fR
+Binc IMAP's authenticator. The first argument is invoked as an
+authenticator subprocess of Binc, with the rest of the arguments
+passed as the authenticator's local arguments.
+
+.SH "EXAMPLE INVOCATION"
+
+The following example shows how to invoke Binc IMAP using multilog,
+with an example 
+.B /opt
+location for the conf file and using
+.I checkpassword
+as the authenticator. Notice that both the authentication stub and
+the authenticated daemon must both have command line arguments, and that
+the authenticator comes after '--'.
+
+.RS
+.nf
+/opt/bincimap/bin/bincimap-up                        \\
+     --conf=/opt/bincimap/etc/bincimap.conf          \\
+     --                                              \\
+     /bin/checkpassword                              \\
+     /opt/bincimap/bin/bincimapd
+.fi
+.RE
+
+You will typically invoke
+.B bincimapd
+from either
+.I xinetd
+or
+.I supervise.
+
+.SH "FILES"
+
+All
+.B Binc IMAP's
+configuration files use the same
+.B Binc::Storage
+format. It's basically a sequence of named
+.B sections
+enclosed in
+.B {braces},
+each containing a set of comma separated
+.B key=value
+pairs. The
+.B keys
+must be alphanumeric, and the values can contain
+any character if it's
+.B quoted.
+
+.TP
+\fB.I bincimap.conf\fR
+Global configurations file. All entries in this file can be overrun
+with command line arguments.
+
+.SH "COPYRIGHT"
+Copyright (C) 2002, 2003 Andreas Aardal Hanssen
+
+This is free software; see the source for copying conditions. There is
+NO warranty.
+
+.SH "NOTE"
+Please report any bugs to the
+.B Binc IMAP
+mailing list. Before posting your bug, check out the
+.B Binc IMAP
+official home page for a list of mailing list archives
+to browse.
+
+.RS
+.nf
+Mailing list: <lists-bincimap@infeline.org>
+Home page: http://www.bincimap.org/
+.fi
+.RE
+
+.SH "AUTHOR"
+Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+
+.RE
+.SH "SEE ALSO"
+bincimapd(1) bincimap.conf(5) multilog(8) supervise(8) tcpserver(1) xinetd(8) xinetd.conf(5)
+
+.B Note:
+The first three man pages are available for download from
+.I http://www.qmail.org/.

@@ -1,0 +1,128 @@
+.TH bincimapd 1
+.SH "NAME"
+bincimapd \- IMAP4rev1 server
+
+.SH "SYNOPSIS"
+.B bincimap-up [ options... ] -- <authenticator> bincimapd
+
+.SH "DESCRIPTION"
+
+.B Binc IMAP
+is a simple
+.B xinetd
+/
+.B tcpserver
+invoked IMAP4rev1 server with support for
+.B Maildir.
+It is very easy to install and use.
+
+To configure
+.B Binc IMAP,
+use either command line arguments, configuration file
+entries, or a
+.B combination
+of both.
+
+Note that command line arguments always override config file options.
+
+.SH "OPTIONS"
+
+As of version 1.1.6, bincimapd only optionally takes command line
+options. The default behavior is to inherits options from bincimap-up
+through the environment. Passing arguments to bincimapd will override
+settings inherited from bincimap-up.
+
+For a complete listing of options for bincimapd, see the bincimap-up
+man page.
+
+Local options are read through the file .bincimap, located at the
+current working directory that bincimapd is invoked in, before it
+enters the depository path.
+
+.SH "FILES"
+
+All
+.B Binc IMAP's
+configuration files use the same
+.B Binc::Storage
+format. It's basically a sequence of named
+.B sections
+enclosed in
+.B {braces},
+each containing a set of comma separated
+.B key=value
+pairs. The
+.B keys
+must be alphanumeric, and the values can contain
+any character if it's
+.B quoted.
+
+.TP
+.I $HOME/.bincimap
+Local configurations file. This file has a similar structure to the
+global
+.I bincimap.conf
+file, and it can be set by each user to override both command line
+arguments and the global configuration. It only works for a few
+selected options, though.
+
+.TP
+.I $HOME/<maildepot>/.../bincimap-uidvalidity
+This file contains a version number, and the
+.B UIDNEXT
+and
+.B UIDVALIDITY
+values for the given mailbox.
+
+.TP
+.I $HOME/<maildepot>/.../bincimap-cache
+This file contains a version number, and it stores the
+.B UID
+values for each message, along with (optionally) some cached
+information.
+
+.SH "ENVIRONMENT"
+
+bincimapd reads its configuration from the environment, as passed by
+bincimap-up. In addition, bincimapd reads the variable
+.B BINCIMAP_LOGIN
+which contains a message from bincimap-up with the tag and command
+used to authenticate, separated by a +. If the tag and command used
+to authenticate were "1 LOGIN", then
+.B BINCIMAP_LOGIN
+would be set to "LOGIN+1".
+
+Note that it is essential that the authenticator invoked by
+bincimap-up does not clear the environment.
+
+.SH "COPYRIGHT"
+Copyright (C) 2002, 2003 Andreas Aardal Hanssen
+
+This is free software; see the source for copying conditions. There is
+NO warranty.
+
+.SH "NOTE"
+Please report any bugs to the
+.B Binc IMAP
+mailing list. Before posting your bug, check out the
+.B Binc IMAP
+official home page for a list of mailing list archives
+to browse.
+
+.RS
+.nf
+Mailing list: <lists-bincimap@infeline.org>
+Home page: http://www.bincimap.org/
+.fi
+.RE
+
+.SH "AUTHOR"
+Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+
+.RE
+.SH "SEE ALSO"
+bincimapd.conf(5) bincimap-up(1) multilog(8) supervise(8) tcpserver(1) xinetd(8) xinetd.conf(5)
+
+.B Note:
+The first three man pages are available for download from
+.I http://www.qmail.org/.

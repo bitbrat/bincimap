@@ -1,0 +1,816 @@
+\documentclass[11pt,a4paper,twoside,openright]{report}
+\usepackage[latin1]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[colorlinks=true]{hyperref}
+\usepackage[usenames]{color}
+\usepackage{fancyvrb,varioref}
+
+\pagestyle{headings}
+% \pagecolor[rgb]{0.134,0.40,0.40}
+
+\begin{document}
+
+% \color{white}
+\title{Binc IMAP manual (DRAFT)}
+\author{Andreas Aardal Hanssen}
+
+\maketitle
+\tableofcontents
+
+%----------------------------------------------------------------
+%----------------------------------------------------------------
+%----------------------------------------------------------------
+\chapter[Introducing Binc IMAP]{Introduction}
+
+\begin{quote}
+``As an alternative to existing similar IMAP servers, Binc IMAP
+strives to be very easy to use, but robust, stable and secure.''
+\end{quote}
+Welcome to Binc IMAP, a project started December 2003 by Andreas
+Aardal Hanssen. Binc IMAP is an open source IMAP project which differs
+from existing IMAP projects. Here is a list of the project goals:
+
+\begin{enumerate}
+\item Binc IMAP will always have a helpful, hospitable community.
+  \begin {itemize}
+  \item Although it is expected that users of Binc IMAP do their
+  homework before posting to the mailing list, the server author and
+  community of the Binc IMAP project will be friendly and will
+  approach everyone with respect. The same behavior is expected from
+  those who post to the list.
+
+  \item There will be no RTFM\footnote{According to acronymfinder.com,
+  RTFM stands, among many other suggestions, for ``Read The Fscking
+  Manual'' (fsck is a Unix filesystem checker)} on the project's
+  mailing list. Flaming and personal insults on the project's mailing
+  list will result in banning of the originator.
+
+  \item The community is encouraged to pay back to the project's
+  contributors by sharing their own experience and contributions to
+  Binc IMAP through the GPL license.
+  \end{itemize}
+
+\item Binc IMAP will not compete with other IMAP projects
+  \begin{itemize}
+  \item Under no circumstance will this project be in market driven
+  competition with other IMAP servers.
+
+  \item Binc IMAP will first and foremost be a quality driven project.
+
+  \item This project is meant to influence the community of authors of
+  similar network protocols and servers, and hopes to increase the
+  general quality of software that is used all over the globe and
+  beyond.
+  \end{itemize}
+
+\item Binc IMAP provides security through good design
+  \begin{itemize}
+  \item A well designed server is less exposed to bugs than a poorly
+  designed server.
+
+  \item The server will strive to use every kind of security enhancing
+  feature, while keeping the implementation details as good and simple
+  as possible.
+
+  \item The source is open and downloadable. Potential bugs and/or
+  nasty pieces of code are easily uncovered when the whole community
+  is able to study every line of code in detail. Bugs should always be
+  reported to the project's mailing list.
+  \end{itemize}
+
+\item Binc IMAP is modular
+  \begin{itemize}
+  \item Where possible and practical from both a usage and design
+    stand point, modules will be seperated and replaceable through
+    \textit{pluggable extension support}. Examples of future
+    replaceables and enhancements include:
+    \begin{itemize}
+    \item authentication modules (shadow, PAM, LDAP)
+    \item search modules
+    \item protocol extensions modules (namespaces, ACL, shared folders)
+    \item mailbox formats (Maildir, mbox, MySQL, POP3 proxy)
+    \end{itemize}
+
+  \item With a modular and good object oriented design, it will be
+  easy to quickly understand what every method and function does. This
+  will increase third party developers' ability to write extensions
+  and modifications fast.
+
+  \end{itemize}
+
+\item Binc IMAP favors quality over quantity
+  
+  \begin{itemize}
+  \item Binc IMAP's releases are milestones. We strive for perfection.
+
+  \item Work on improving the existing design and extensibility will
+  always go ahead of adding new features.
+
+  \item Through extensive module support, the community is encouraged
+  to contribute to the adding and testing of new features.
+
+  \item Core design and implementation will always focus on quality.
+  \end{itemize}
+
+\end{enumerate}
+
+\textbf{This document serves as the server's main documentation.}
+
+%----------------------------------------------------------------
+%----------------------------------------------------------------
+%----------------------------------------------------------------
+\chapter[Installing Binc IMAP]{Installation}
+
+The installation procedure for Binc IMAP is designed to be quick and
+easy, and in most cases you will get what you want at your first
+attempt. The source code is designed to be able to compile on most
+UNIX-like platforms.
+
+If you experience problems with compiling and installing this package
+on your own platform, don't hesitate to post your problem to the
+project's mailing list.
+
+%----------------------------------------------------------------
+\section{Downloading the package}
+
+Binc IMAP is available for a number of platforms and distributions.
+Download the package most suitable for your distribution from one
+of the following locations:
+
+\begin{itemize}
+
+\item Red Hat Linux:
+  \begin{itemize}
+  \item \url{http://www.bincimap.org/}
+  \item \url{http://www.bincimap.andreas.hanssen.name/}
+  \item \url{http://bincimap.argonsoft.de/}
+  \end{itemize}
+
+\item Mandrake Linux:
+  \begin{itemize}
+  \item \url{ftp://sunsite.uio.no/linux/Mandrake/Mandrake-devel/contrib}
+  \end{itemize}
+
+\item Debian Linux:
+  \begin{itemize}
+  \item \url{http://packages.debian.org/testing/mail/bincimap.html}
+  \item \url{http://packages.debian.org/unstable/mail/bincimap.html}
+  \end{itemize}
+
+\item FreeBSD:
+  \begin{itemize}
+  \item \url{http://www.freebsd.org/cgi/ports.cgi?query=bincimap&stype=all}
+  \end{itemize}
+
+\item Other (tarball):
+  \begin{itemize}
+  \item \url{http://www.bincimap.org/}
+  \item \url{http://www.bincimap.andreas.hanssen.name/}
+  \item \url{http://bincimap.argonsoft.de/}
+  \end{itemize}
+
+\end{itemize}
+
+%----------------------------------------------------------------
+\section{Building from the tarball}
+\label{buildfromtarball}
+
+This section describes how you can build the Binc IMAP server using
+the compressed tar archive (\textit{tarball}). This approach should
+work on all supported platforms.
+
+The tarball creates a seperate directory in which it installs all
+source files. The installation procedure is typical for open source C
+and C++ software that uses the \texttt{autoconf} and \texttt{automake}
+tools. First, unpack the tarball:
+
+\begin{Verbatim}
+# zcat bincimap-1.2.1.tar.gz | tar xvf -
+<outputs a list of files>
+\end{Verbatim}
+Now, enter the directory that was created. In this directory, you will
+find the \texttt{configure} script.
+
+\begin{Verbatim}
+# cd bincimap-1.2.1
+# ls configure
+configure
+#
+\end{Verbatim}
+Run the configure script with all options you find appropriate. The
+\texttt{configure} options are listed in
+section\vref{configureoptions}. Most users will be ok with these
+common options:
+
+\begin{Verbatim}
+# ./configure --prefix=/opt/bincimap --sysconfdir=/etc/opt/bincimap
+\end{Verbatim}
+The \texttt{configure} script will produce many lines of output, and
+finally, if all goes well, it will create all the \texttt{Makefile}s
+we need to build this projectm We can now run \texttt{make}:
+
+\begin{Verbatim}
+# make
+\end{Verbatim}
+If the compile finishes with no problems, you can install your new
+software:
+
+\begin{Verbatim}
+# make install
+\end{Verbatim}
+If the \texttt{prefix} option is \texttt{/opt/bincimap}, \texttt{make
+install} will create the following files:
+
+\begin{Verbatim}
+/opt/bincimap/bin/bincimap-up              # Startup stub
+/opt/bincimap/bin/bincimapd                # Main server
+/opt/bincimap/man/man1/bincimap-up.1       # Man page
+/opt/bincimap/man/man1/bincimapd.1         # Man page
+/opt/bincimap/man/man5/bincimap.conf.5     # Man page
+\end{Verbatim}
+The \texttt{sysconfdir} option tells Binc IMAP where to install the
+configuration files. If \texttt{sysconfdir} is set to
+\texttt{/etc/opt/bincimap}, \texttt{make install} will create the
+following files:
+
+\begin{Verbatim}
+/etc/opt/bincimap/bincimap.conf            # Main conf file
+/etc/opt/bincimap/xinetd/imap              # xinetd conf file
+/etc/opt/bincimap/xinetd/imaps             # xinetd conf file
+/etc/opt/bincimap/service/imap/run         # service conf file
+/etc/opt/bincimap/service/imap/log/run     # service conf file
+/etc/opt/bincimap/service/imaps/run        # service conf file
+/etc/opt/bincimap/service/imaps/log/run    # service conf file
+\end{Verbatim}
+You are now ready to configure Binc IMAP. Read more about this in
+section\vref{configuration}.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+\subsection{Options to configure}
+\label{configureoptions}
+
+\begin{itemize}
+
+\item \Verb@--prefix=<dir>@\\
+  Where to install binary files and man pages. Binary files
+  will be installed under \Verb@<dir>/bin@ and man pages go
+  under \Verb@<dir>@/man.
+
+\item \Verb@--sysconfdir=<dir>@\\
+  Where to install configuration files. The main conf file
+  goes under \Verb@<dir>/bincimap.conf@ and other conf files
+  go under \Verb@<dir>/<path>/...@, depending on the type
+  of conf files.
+
+  \textbf{Note:} The bundled service files
+  must \textbf{not} be stored on an NFS partition or any partition
+  that does not support file locking.
+
+\item \Verb@--localstatedir=<dir>@\\
+  Where log directories go for multilog logging. Directories
+  \texttt{log/bincimap} and \texttt{log/bincimap-ssl} will be created
+  under this prefix.
+
+\item \Verb@--disable-ssl@\\
+  Compile Binc IMAP with no SSL code, and without the OpenSSL
+  requirement. Also removes the STARTTLS capability.
+
+\item \Verb@--enable-ssl@ (default)\\
+  Compile Binc IMAP with SSL code, and with the OpenSSL
+  requirement. Enables the STARTTLS capability.
+
+\item \Verb@--enable-static@\\
+  Compile Binc IMAP with static linkage.
+
+\item \Verb@--without-optimization@\\
+  Compile Binc IMAP with -O0 (no optimization).
+
+\end{itemize}
+
+\section{Building from the src.rpm}
+
+The \texttt{src.rpm} packages are designed for the Red Hat Linux
+distribution. If you are not running Red Hat Linux or similar
+distributions and this procedure fails, then you should build Binc
+IMAP from the tarball (section\vref{buildfromtarball}).
+
+\begin{itemize}
+
+\item Make sure you have the \texttt{rpmbuild} program installed. In
+Red Hat, it is a part of the \texttt{rpm-build} package.
+
+\item As root\footnote{It is possible to build src.rpm packages as
+non-root. There is info available on http://www.rpm.org/
+about this.}, run the following command:
+
+\begin{Verbatim}
+rpmbuild --rebuild bincimap-1.2.1-1.src.rpm
+\end{Verbatim}
+
+\item If the command succeeds, you will have generated a binary rpm
+package that you can install.
+
+\begin{Verbatim}
+rpm -i bincimap-1.2.1-1.i386.rpm
+\end{Verbatim}
+
+\end{itemize}
+
+\section{After building and installing the package}
+
+When the service has been installed successfully, you should take your
+time to configure it properly. Please refer to
+section\vref{configuration}.
+
+%----------------------------------------------------------------
+%----------------------------------------------------------------
+%----------------------------------------------------------------
+\chapter[Configuring Binc IMAP]{Configuration}
+\label{configuration}
+
+With most services, the hardest thing to get right is the
+configuration file. With Binc IMAP, this should not be a problem for
+the administrator. There are few options to set, and the package also
+provides a default configuration file whose default settings are fine
+for most uses.
+
+This section will first give an overview of the format of Binc IMAP's
+configuration file, and it will then explain every option that you
+can set.
+
+\section{Introduction to \texttt{Binc::Storage}}
+
+Binc IMAP uses a special file format, called \texttt{Binc::Storage}
+after its C++ class name. This file format is human readable and
+editable, it's fast to parse programmatically, and it has very little
+overhead when representing data. It also groups options together in
+sections, supports comments (c-style) and arbitrary whitespace usage.
+
+The structure of the file is as follows:
+
+\begin{enumerate}
+\item Aliases
+\item Section1
+  \begin{enumerate}
+    \item key1=value1
+    \item key2=value2
+    \item ...
+  \end{enumerate}
+\item Section2
+  \begin{enumerate}
+    \item key1=value1
+    \item key2=value2
+    \item ...
+  \end{enumerate}
+\item SectionN...
+\end{enumerate}
+Moving on to the actual format, the file starts with an optional list
+of aliases. These aliases start with a question mark (?), followed by
+the alias, a colon (:), the replacement text, and finally a semicolon
+(;). This example defines the alias "m" to represent the text
+"myfirstsection":
+
+\begin{Verbatim}
+?m:MyFirstSection;
+\end{Verbatim}
+Then comes sections. A section starts with an identifier --- the
+section name. The name contains only alphanumeric (a to z, A to Z and
+0-9) characters, and it's case sensitive (``hello'' and ``HELLO''
+could be two different sections). The section content itself is
+enclosed in braces, as in the following example.
+
+\begin{Verbatim}
+MyFirstSection {
+
+}
+\end{Verbatim}
+Inside a section we have a comma seperated list of key=value pairs.
+The keys and values consist of a sequence of one or more alphanumeric
+words. The value can also contain quoted strings:
+
+\begin{Verbatim}
+MyFirstSection {
+    certificate path = "/etc/path/certificate.txt",
+    optional argument = yes
+}
+\end{Verbatim}
+The aliases from the start of the configuration file are useful if we
+wish to appreviate long words in a key or section name in order to
+save space. Normally this is only used in generated files, but they
+can also make a manually edited conf file more compact. Here we have
+replaced ``MyFirstSection'' with its alias ``m'':
+
+\begin{Verbatim}
+m {
+    certificate path = "/etc/path/certificate.txt",
+    optional argument = "yes"
+}
+\end{Verbatim}
+When accessed by Binc IMAP, the two sections are treated equally, as
+if there was no alias subsitution.
+
+The following sections describe the \texttt{Binc::Storage} sections
+that Binc IMAP recognizes.
+
+\section{Sections in \texttt{bincimap.conf}}
+
+Now followes a brief description of all recognized sections in
+\texttt{bincimap.conf}.
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+\subsection{Authentication}
+
+The authentication details in Binc IMAP are set in a section called \texttt{Authentication}:
+
+\begin{Verbatim}
+Authentication {
+
+}
+\end{Verbatim}
+The recognized options are:
+
+\begin{itemize}
+
+\item \texttt{allow plain auth in non ssl = yes{|}no}
+  \begin{itemize}
+    \item[\texttt{yes}] Clients are allowed to authenticate using
+      plain text passwords when transport is not encrypted with SSL.
+    \item[\texttt{no}] Clients are \textit{not} allowed to
+      authenticate using plain text passwords when transport is not
+      encrypted with SSL.
+  \end{itemize}
+
+\item \texttt{auth penalty = \Verb@<n>@}
+  \begin{itemize}
+    \item [] If a user tries to authenticate but the password or
+      username is wrong, the server will sleep for \Verb@<n>@ seconds
+      before allowing the user to try again.
+  \end{itemize}
+\end{itemize}
+This is an example of an \texttt{Authentication} section in
+\texttt{bincimap.conf}:
+
+\begin{Verbatim}
+Authentication {
+    allow plain auth in non ssl = no,
+    auth penalty = 4
+}
+\end{Verbatim}
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+\subsection{Logging}
+
+The logging details in Binc IMAP are set in a section called \texttt{Log}:
+
+\begin{Verbatim}
+Log {
+
+}
+\end{Verbatim}
+The recognized options are:
+
+\begin{itemize}
+
+\item \texttt{type = syslog{|}multilog}
+  \begin{itemize}
+  \item [\texttt{syslog}] Binc IMAP will log using syslog.
+  \item [\texttt{multilog}] Binc IMAP will log to \textit{stderr},
+    which is the default input for \texttt{multilog}.
+  \end{itemize}
+
+\item \texttt{environment ip variable = <var>}
+  \begin{itemize}
+  \item [] If configured to log using \texttt{multilog}, Binc IMAP
+    attempts to find the remote host's IP address in the environment
+    variables.  This option allows the administrator to suggest which
+    variable the IP address is stored in.
+  \end{itemize}
+
+\item \texttt{syslog facility = <facility>}
+  \begin{itemize}
+    \item [] If Binc IMAP is configured to log using syslog, it will
+      log using the syslog facility described by the alias
+      \Verb@<facility>@.
+  \end{itemize}
+
+\item \texttt{syslog facility number = <facilitynr>}
+  \begin{itemize}
+    \item [] If Binc IMAP is configured to log using syslog, it will
+      log using the syslog facility number \Verb@<facilitynr>@. This
+      is typically used if the textual facility name is not recognized
+      by Binc IMAP.
+  \end{itemize}
+\end{itemize}
+This is an example of a \texttt{Log} section in
+\texttt{bincimap.conf}:
+
+\begin{Verbatim}
+Log {
+    type = syslog,
+    syslog facility = LOG_DAEMON
+}
+\end{Verbatim}
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+\subsection{Security}
+
+The security details in Binc IMAP are set in a section called \texttt{Security}:
+
+\begin{Verbatim}
+Security {
+
+}
+\end{Verbatim}
+The recognized options are:
+
+\begin{itemize}
+\item \texttt{jail path = <path>}
+  \begin{itemize}
+    \item [] Binc IMAP's invocation stub, \texttt{bincimap-up}, enters
+      a ``chroot jail'' path after starting the main server. The path
+      is given in this setting and it must exist for Binc IMAP to
+      function properly.
+  \end{itemize}
+\item \texttt{jail user = <userid>}
+  \begin{itemize}
+    \item [] Binc IMAP's invocation stub is by default run as the
+      privileged user \texttt{root}. Before the stub enters its
+      ``chroot jail'', it changes to the \Verb@<userid>@ user, which
+      should be a user with no privileges.
+  \end{itemize}
+\item \texttt{jail group = <groupid>}
+  \begin{itemize}
+    \item [] As with \texttt{jail user}, but sets the \textit{group}
+      that the invocation stub changes to before entering the jail.
+  \end{itemize}
+\end{itemize}
+This is an example of a \texttt{Security} section in
+\texttt{bincimap.conf}:
+
+\begin{Verbatim}
+Security {
+    jail path = "/opt/bincimap/bin",
+    jail user = nobody,
+    jail group = nobody
+}
+\end{Verbatim}
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+\subsection{Mailbox settings}
+
+The mailbox settings in Binc IMAP are set in a section called \texttt{Mailbox}:
+
+\begin{Verbatim}
+Mailbox {
+
+}
+\end{Verbatim}
+The recognized options are:
+
+\begin{itemize}
+\item \texttt{type = <type>}
+  \begin{itemize}
+    \item [] Sets the type of mailbox that Binc IMAP should
+      use as default. Currently, the only supported format is
+      \texttt{Maildir}.
+  \end{itemize}
+\item \texttt{depot = <depottype>}
+  \begin{itemize}
+    \item [] Sets the type of depot that Binc IMAP should use. The
+      depot decides how the contents of an IMAP user's mail path is
+      interpreted. Currenty, the two supported depot types are
+      \texttt{IMAPdir} and \texttt{Maildir++}..
+  \end{itemize}
+\item \texttt{path = <path>}
+  \begin{itemize}
+    \item [] When a user authenticates, Binc IMAP can optionally
+      change to a seperate mail directory within the user's home area.
+      This directory is set with the \texttt{path} setting. For mail
+      storage configurations where there is no seperate area for mail,
+      set \texttt{path=""}.
+  \end{itemize}
+\item \texttt{auto create inbox = yes{|}no}
+  \begin{itemize}
+    \item [yes] Binc IMAP will create the INBOX mailbox if the IMAP
+      user does not already have one.
+    \item [no] The server will \textit{not} create INBOX when the user
+      logs in for the first time.
+  \end{itemize}
+\item \texttt{auto subscribe mailboxes = <mailboxlist>}
+  \begin{itemize}
+    \item [] When logging onto the IMAP service for the first time,
+      the user will automatically be subscribed to the mailboxes in
+      the comma seperated list \Verb@<mailboxlist>@. The content of
+      the list if for example "INBOX,Trash,Drafts,Sent".
+  \end{itemize}
+\item \texttt{umask = <number>}
+  \begin{itemize}
+    \item [] All operations in a user's mail directory will be
+      performed using this umask.
+  \end{itemize}
+
+
+\end{itemize}
+This is an example of a \texttt{Mailbox} section in
+\texttt{bincimap.conf}:
+
+\begin{Verbatim}
+Mailbox {
+    path = "Maildir",
+    type = "Maildir",
+    depot = "IMAPdir",
+    auto create inbox = yes,
+    auto subscribe mailboxes = "INBOX,Work,Work/Sent",
+    umask = 0777
+}
+\end{Verbatim}
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+\subsection{Session}
+
+The session details in Binc IMAP are set in a section called \texttt{Session}:
+
+\begin{Verbatim}
+Session {
+
+}
+\end{Verbatim}
+The recognized options are:
+
+\begin{itemize}
+
+\item \texttt{auth timeout = <seconds>}
+  \begin{itemize}
+    \item [] Before authenticating, Binc IMAP will allow clients to
+      idle (stay connected with no activity) for \Verb@<second>@
+      seconds before automatically closing the IMAP session.
+  \end{itemize}
+
+\item \texttt{idle timeout = <seconds>}
+  \begin{itemize}
+    \item [] After authenticating, Binc IMAP will allow clients to
+      idle (stay connected with no activity) for \Verb@<second>@
+      seconds before automatically closing the IMAP session.
+  \end{itemize}
+
+\item \texttt{transfer timeout = <seconds>}
+  \begin{itemize}
+    \item [] Every chunk of data that is sent by Binc IMAP to the IMAP
+      client has \Verb@<seconds>@ seconds to complete. If this timeout
+      is exceeded, the IMAP session is closed.
+  \end{itemize}
+
+\item \texttt{transfer buffer size = <nrofbytes>}
+  \begin{itemize}
+    \item [] To save network roundtrips, Binc IMAP buffers up to
+      \Verb@<nrofbytes>@ bytes in memory before it is shipped off to
+      the client. Greatly affects performance on high latency links.
+  \end{itemize}
+\end{itemize}
+
+
+This is an example of a \texttt{Session} section in
+\texttt{bincimap.conf}:
+
+\begin{Verbatim}
+Session {
+  auth timeout = 30,
+  idle timeout = 1800,
+  transfer timeout = 1200,
+  transfer buffer size = 1024
+}
+\end{Verbatim}
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+\subsection{SSL/TLS}
+
+The SSL details in Binc IMAP are set in a section called \texttt{SSL}:
+
+\begin{Verbatim}
+SSL {
+
+}
+\end{Verbatim}
+The recognized options are:
+
+\begin{itemize}
+
+\item \texttt{pem file = <file>}
+  \begin{itemize}
+    \item [] Binc IMAP reads a PEM encoded SSL certificate from this
+      location. This file can often be generated with scripts under
+      \texttt{/usr/share/ssl/certs}.
+  \end{itemize}
+
+\item \texttt{ca file = <file>}
+  \begin{itemize}
+    \item [] Gives Binc IMAP a file that contains certificate
+      authorities.  The purpose of this file is specific to the SSL
+      protocol and it is used in the SSL hand shake.
+  \end{itemize}
+
+\item \texttt{ca path = <path>}
+  \begin{itemize}
+    \item [] Gives Binc IMAP a path in which the SSL library can
+      search for files containing certificate authorities.  The
+      purpose of this path is specific to the SSL protocol and it is
+      used in the SSL hand shake.
+  \end{itemize}
+
+\item \texttt{cipher list = <ciphers>}
+  \begin{itemize}
+    \item [] The string provided in \Verb@<ciphers>@ informs the SSL
+      library of which ciphers are available.
+  \end{itemize}
+
+\item \texttt{verify peer = yes{|}no}
+  \begin{itemize}
+    \item [] Informs Binc IMAP wether or not the server should attempt
+      to verify the peer's certificate.
+  \end{itemize}
+
+\end{itemize}
+This is an example of a \texttt{SSL} section in
+\texttt{bincimap.conf}:
+
+\begin{Verbatim}
+SSL {
+  pem file = "/usr/share/ssl/certs/server.pem",
+  ca file = "",
+  ca path = "",
+  cipher list = "!ADH:RC4+RSA:HIGH:MEDIUM:LOW:EXP:+SSLv2:+EXP",
+  verify peer = no
+}
+\end{Verbatim}
+
+%----------------------------------------------------------------
+%----------------------------------------------------------------
+%----------------------------------------------------------------
+\chapter{The Binc IMAP Depot}
+
+The main role of an IMAP server is to give email clients an interface
+through which they can authenticate and then access email and
+mailboxes located on a (remote) mail server. The mails are stored on
+the mail servers in a special structure, and this structure varies
+from system to system.
+
+Most often we distinguish between the mailbox \textit{structure} (or
+\textit{hierarchy structure}) and its \textit{format}. The structure
+determines how the different mailboxes and submailboxes are stored,
+and the format decides how each and every email is stored within one
+mailbox.
+
+Binc IMAP uses the generic container object \textit{Depot} to describe
+the map between the hierarchy structure and its translation to
+selectable mailboxes in IMAP. The Depot has two specializations: one
+for IMAPdir and one for Maildir++.
+
+%----------------------------------------------------------------
+\section{Maildir++}
+
+Courier-IMAP defines the hierarchy structure Maildir++, which provides
+a way for existing Maildir users (Maildir is a mailbox format) to have
+multiple mailboxes and submailboxes inside the directory that contains
+the default mailbox ``INBOX'' (which often resides in \Verb@~/Maildir@
+for each UNIX user).
+
+Read more about the Maildir++ format at the following location:
+
+\begin{itemize}
+\item [] \url{http://www.inter7.com/courierimap/README.maildirquota.html}
+\end{itemize}
+
+Binc IMAP supports this mailbox structure with a few limitations and a
+few enhancements:
+
+\begin{itemize}
+\item The \textit{maildirfolder} file is not created inside each
+Maildir submailbox. The reason for this is that this only works with
+mailbox formats that store a mailbox inside a directory, such as
+Maildir.
+\item Maildir++ quotas are not supported
+\item No Maildir++ restrictions to mailbox names apply (such as
+\texttt{.Trash})
+\item Mailboxes inside a Maildir++ structure can be of any format, not
+just Maildir.
+\end{itemize}
+
+%----------------------------------------------------------------
+\section{IMAPdir}
+
+IMAPdir is Binc IMAP's native mailbox structure. It is open and usable
+for most existing local mail clients. For a full description, look up
+the following web site, or search for the
+\texttt{bincimap-imapdir.html} file in the packaged documentation.
+
+\begin{itemize}
+\item [] \url{http://www.bincimap.org/bincimap-imapdir.html}
+\end{itemize}
+
+IMAPdir does not extend/change any mailbox formats; it merely defines
+a way to describe mailboxes and submailboxes in a way that is suitable
+for an IMAP server, with as few restrictions as necessary.
+
+
+\end{document}
+

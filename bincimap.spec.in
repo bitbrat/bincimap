@@ -1,0 +1,1175 @@
+#test
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Street #330, Boston, MA 02111-1307,
+# USA.
+
+#-----------------------------------------------------------------------
+# package parameters
+
+# version and release can be overridden on the rpmbuild command-line
+# with --define 'release 2', etc.
+
+%{!?version:%define version @VERSION@}
+%{!?release:%define release 1}
+
+# --without ssl   -- build without SSL support (default is --with ssl)
+# --with inusr    -- install into /usr instead of /opt
+
+#%{!?_without_ssl:%define _without_ssl --without-ssl}
+%{!?_with_inusr:%define inopt 1}
+
+#-----------------------------------------------------------------------
+Summary: Binc IMAP server
+Name: @PACKAGE@
+Version: %{version}
+Release: %{release}
+URL: http://www.bincimap.org/
+Source0: %{name}-%{version}.tar.gz
+License: GPL
+Group: System Environment/Daemons
+BuildRoot: %{_tmppath}/%{name}-%{version}-root
+Packager: Andreas Aardal Hanssen <andreas-binc@bincimap.org>
+Vendor: Andreas Aardal Hanssen <andreas-binc@bincimap.org>
+%{?_with_ssl:BuildRequires: openssl-devel}
+%{?_with_ssl:Requires: openssl}
+%{!?inopt:Prefix: /usr}
+
+# Path settings for /opt installation (for /usr installation
+# the default RedHat macros work as is)
+%{?inopt:%define _prefix	/opt/@PACKAGE@}
+%{?inopt:Prefix: %{_prefix}}
+%{?inopt:%define _sysconfdir	/etc/opt}
+%{?inopt:%define _localstatedir	/var/opt}
+%{?inopt:%define _docdir	%{_prefix}/doc}
+%{?inopt:%define _mandir	%{_prefix}/man}
+%{?inopt:%define _sbindir	%{_prefix}/bin}
+
+#-----------------------------------------------------------------------
+%description
+
+Binc IMAP is an IMAP server, written in C++ for the Linux platform. It
+supports Dan J. Bernstein's Maildir format and checkpassword
+authentication.
+
+As an alternative to existing similar IMAP servers, Binc IMAP strives
+to be
+
+* very easy to install and use, but robust, stable and secure
+* absolutely compliant with the IMAP4rev1 protocol
+* simple and modular in design, making it very easy for
+  third parties to utilize the source code and enhance the
+  product.
+
+Binc IMAP is released under the GNU General Public License.
+
+#-----------------------------------------------------------------------
+%prep
+%setup -q
+
+#-----------------------------------------------------------------------
+%build
+
+STATIC=--enable-static
+
+CXXFLAGS="-O2 -s -I/usr/kerberos/include"
+%configure $STATIC --prefix=/opt/@PACKAGE@ --sysconfdir=/etc/opt/@PACKAGE@ --localstatedir=/var/opt
+
+make
+
+#-----------------------------------------------------------------------
+%install
+rm -rf $RPM_BUILD_ROOT
+
+# shouldn't we be using a 'make install' target for all this?
+
+PRE=$RPM_BUILD_ROOT%{_prefix}
+BIN=$RPM_BUILD_ROOT%{_sbindir}
+ETC=$RPM_BUILD_ROOT%{_sysconfdir}/@PACKAGE@
+SCR=$RPM_BUILD_ROOT%{_sysconfdir}/@PACKAGE@/scripts
+VAR=$RPM_BUILD_ROOT%{_localstatedir}
+MAN=$RPM_BUILD_ROOT%{_mandir}
+
+# Directory structure
+install -d $BIN
+install -d $ETC/xinetd
+install -d $SCR
+install -d $ETC/service/imap/log
+install -d $ETC/service/imaps/log
+install -d $MAN/man1
+install -d $MAN/man5
+install -d $VAR/log/@PACKAGE@
+install -d $VAR/log/@PACKAGE@-ssl
+
+# Binaries
+install src/bincimapd		$BIN
+install src/bincimap-up		$BIN
+
+# Config files
+install conf/bincimap.conf	$ETC
+install conf/xinetd-bincimap	$ETC/xinetd/imap
+install conf/xinetd-bincimaps	$ETC/xinetd/imaps
+
+install conf/checkpassword.pl	$SCR
+install conf/toimapdir		$SCR
+#install conf/tomaildir++	$SCR
+install conf/xinetd-bincimaps	$ETC/xinetd/imaps
+install conf/xinetd-bincimaps	$ETC/xinetd/imaps
+
+install service/run		$ETC/service/imap/run
+install service/log/run		$ETC/service/imap/log/run
+install service/run-ssl		$ETC/service/imaps/run
+install service/log/run-ssl	$ETC/service/imaps/log/run
+
+# Documentation
+# (the non-man doc files are taken care of with the %doc macro)
+install man/bincimapd.1		$MAN/man1
+install man/bincimap-up.1	$MAN/man1
+install man/bincimap.conf.5	$MAN/man5
+
+#-----------------------------------------------------------------------
+%clean
+#rm -rf $RPM_BUILD_ROOT
+
+#-----------------------------------------------------------------------
+%files
+%defattr(755,root,root)
+
+# Documentation files (other than man pages)
+%doc README README.SSL COPYING COPYING.OpenSSL ChangeLog 
+%doc doc/bincimap.css doc/bincimap-*.html
+%doc doc/manual/bincimap-manual.{dvi,ps}
+%doc doc/rfc2060.txt doc/rfc2683.txt
+
+# These dirs belong to the package only if in /opt
+%{?inopt:%dir %{_prefix}}
+%{?inopt:%dir %{_bindir}}
+%{?inopt:%dir %{_mandir}}
+%{?inopt:%dir %{_mandir}/*}
+
+# Directories
+%dir %{_sysconfdir}/@PACKAGE@
+%dir %{_sysconfdir}/@PACKAGE@/service
+%dir %{_sysconfdir}/@PACKAGE@/service/imap
+%dir %{_sysconfdir}/@PACKAGE@/service/imap/log
+%dir %{_sysconfdir}/@PACKAGE@/service/imaps
+%dir %{_sysconfdir}/@PACKAGE@/service/imaps/log
+%dir %{_sysconfdir}/@PACKAGE@/xinetd
+%dir %{_localstatedir}/log/@PACKAGE@
+%dir %{_localstatedir}/log/@PACKAGE@-ssl
+
+# Binaries
+%defattr(755,root,root)
+%{_sbindir}/bincimapd
+%{_sbindir}/bincimap-up
+#%{_sysconfdir}/@PACKAGE@/scripts/tomaildir++
+%{_sysconfdir}/@PACKAGE@/scripts/toimapdir
+%{_sysconfdir}/@PACKAGE@/scripts/checkpassword.pl
+
+# Config files
+%config %{_sysconfdir}/@PACKAGE@/service/imap/run
+%config %{_sysconfdir}/@PACKAGE@/service/imap/log/run
+%config %{_sysconfdir}/@PACKAGE@/service/imaps/run
+%config %{_sysconfdir}/@PACKAGE@/service/imaps/log/run
+%defattr(644,root,root)
+%config %{_sysconfdir}/@PACKAGE@/bincimap.conf
+%config %{_sysconfdir}/@PACKAGE@/xinetd/imap
+%config %{_sysconfdir}/@PACKAGE@/xinetd/imaps
+
+# Man pages
+%{_mandir}/man1/bincimapd.1*
+%{_mandir}/man1/bincimap-up.1*
+%{_mandir}/man5/bincimap.conf.5*
+
+#-----------------------------------------------------------------------
+%changelog
+
+* Tue Jan 20 2004 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
+- Removed time_t <-> int implicit conversion and overload ambiguity.
+- Rewrote the flow of the APPEND command, and the readStr command
+  in io.cc.
+- Fixed behavior of fetching TEXT attribute.
+- 1.2.6beta3-1
+
+* Fri Jan 16 2004 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
+- Fixed a bug where FETCH sometimes claimed that mime parts had
+  the wrong size.
+- Reverted an erroneous change from 1.2.3 to 1.2.4 in io.cc, where
+  readStr() no longer initialized the input buffer to "".
+- AppendOperator now stores the correct date on saved messages.
+- 1.2.6beta2-1
+
+* Wed Jan 14 2004 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
+- Two bugs were fixed that prevented a message that was saved to a
+  mailbox from getting the requested internaldate.
+- A bug in the unfolding of MIME headers erroneously removed what was
+  believed to be comments from within quoted text. This messed up
+  parsing multipart messages with parenthesis in their boundary
+  strings.
+- 1.2.6beta1-1
+- Removed folder prefixes from header comments in all files. The
+  comments now only mention the base name of the file.
+
+* Mon Jan 12 2004 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
+- LIST and LSUB now return X if X/* is queried for, as recommended
+  by Marc Crispin on the IMAP protocol list.
+- AUTHENTICATE PLAIN now writes "+ \r\n" instead of "+\r\n" as an
+  initial response. KMail got confused by only the "+", while pine
+  got confused by "+ OK". This compromise makes AUTHENTICATE PLAIN
+  work for both clients, while still being completely IMAP compliant.
+- Added Daniel James' patch which fixes HEADER.FIELDS.NOT behavior.
+
+* Fri Jan 09 2004 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
+- Fixed problem with APPEND locking up
+- Fixed bug where clients were not informed when messages were
+  expunged.
+- 1.2.5-1
+
+* Thu Jan 08 2004 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
+- Headers now display 2002-2004 in copyright notice.
+- 1.2.4-1
+
+* Wed Jan 07 2004 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
+- Removed mime-printstruct.cc - it caused compile problems, and is
+  not in use.
+- Added Zak Johnson's patch to fix TRYCREATE
+- Added Jason Parson's patch to fix a problem with creating lock files.
+  The open function didn't get the mode argument, and the lock was
+  created with random mode bits set.
+
+* Thu Dec 18 2003 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
+- Removed lex/yacc storage parser and replaced it and the whole
+  Storage class with a new approach. This uses less memory and is
+  faster. Refactoring of units depending on Storage was required.
+- Binc no longer requires the SSL cipher list to be set. If left
+  empty or not set, the default ciphers in OpenSSL are used.
+
+* Mon Dec 15 2003 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
+- Removed memory bloat. Binc IMAP no longer reads entire fetch
+  responses into memory before outputting them, with the exception
+  of header fetch responses.
+
+* Mon Dec 08 2003 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
+- Fixed two bugs in FETCH that messed up the fetch attributes and
+  gave the full header when fetching only selected fields.
+- Fixed a bug in the MIME parser. We now successfully parse
+  Mark Crispin's torture tests completely.
+
+* Fri Dec 05 2003 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
+- Server now correctly displays BAD response if the stub is not
+  parsed correctly.
+
+* Thu Dec 04 2003 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
+- Added README.SSL
+- README and README.SSL now mention the LifeWithBincIMAP.org site.
+
+* Tue Dec 02 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- The version number in the IMAP greeting can now be switched off with
+  the "version in greeting" option in Security in bincimap.conf.
+- The conf files now accept the '#' character as the start of a comment,
+  except when quoted.
+- Log now reports correct number of (unencrypted) bytes read or written.
+
+* Fri Nov 28 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Implemented support for fetch attributes ALL, FULL and FAST, which
+  for some reason had no implementation yet.
+- Fixed two bugs in operator-authenticate.cc in reading input to the
+  AUTHENTICATE command. Basically the server would loop forever if
+  the client suddenly disconnected while Binc was reading the
+  arguments.
+- Leaving the jail settings in Security{} in bincimap.conf empty
+  will prevent bincimap-up from entering the chroot jail and becoming
+  the jail user/group, but will no longer issue any warnings about it.
+- Greeting now uses (C) after Copyright instead of (c) before it.
+- Removed almost all time(), alarm() and signal() use. Use of this
+  technique for detecting timeouts is very error prone. We now use
+  select() instead.
+- Major changes to parser allow better detection of timeouts, and more
+  proper error reporting.
+
+* Tue Nov 25 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Applied Zak Johnson's patch for fixing a typo in using the
+  "environment ip variable" setting in bincimap.conf.
+
+* Tue Nov 17 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Fixed problem in maildir.cc where messages that are created with a
+  given internaldate always got time(0) instead.
+
+* Tue Oct 28 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Fixed typos in README
+
+* Tue Oct 04 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Added Gerrit's patch to solve operator<< ambiguous overload.
+
+* Tue Sep 29 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Added doxygen docs.
+
+* Fri Sep 26 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Added Jeremy Rossi's patch, which allows plain text authentication
+  if the environment variable ALLOWPLAIN is set. This can be used by
+  tcpserver to allow plain text authentication for clients connecting
+  from certain IP addresses.
+
+* Tue Sep 23 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Added cache to LIST requests - speeds up consecutive LIST requests
+  significantly.
+
+* Sun Sep 21 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Added new scripts to files section in spec file. The scripts were not
+  installed with the earlier rpm packages.
+
+* Sat Sep 20 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Added scripts: "toimapdir", "tomaildir++" and "checkpassword.pl"
+- Fixed two bugs in the MIME parser.
+- Improved error reporting when creating mailboxes with invalid names.
+- 1.2.3-1
+
+* Thu Sep 18 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Fixed STATUS to more properly report recent and uidnext.
+- Fixed maildir-scan.cc to correctly parse unique part of messages that
+  erroneously contain more than one ':'. Specifically, the former parser
+  assumed the ':' was always followed by ",2".
+
+* Wed Sep 17 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Fixed problem with some mailboxes being marked as \Noselect when
+  selectable. Not related to Mozilla mailbox error.
+- Removed some useless log output.
+
+* Sun Sep 14 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Fixed memory leak in bincimapd by adding reference counting.
+- LSUB sets \Noselect again
+- bincimap-subscribed is now called .bincimap-subscribed. The format is
+  greatly simplified. Existing subscribe-files are automatically
+  converted to the new format.
+
+* Wed Sep 10 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- "make cert" no longer uses absolute paths for mktemp and openssl.
+- LSUB always reads subscribed entries from bincimap-subscribed.
+- LSUB does not set the \NoSelect flag.
+- 1.2.2-1
+
+* Tue Sep 09 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Fixed bug in MIME parser where message sizes were mixed up, causing
+  some bodies to be reported as empty. Pine reacted to this bug by
+  reporting an unexpected message size.
+
+* Sat Sep 06 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Fixed bug in fillInputBuffer when converting CRLF files.
+
+* Fri Sep 05 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Greeting now displays time in 24h style instead of 12h style
+  with missing AM/PM.
+- Fixed bug in MIME parser where mozilla did not display attachments
+  correctly.
+- MIME parser speedup for partial content fetches
+- MIME parser now uses unsigned ints everywhere.
+- Artifact off-by-two error in mime parser is now gone.
+- BODY response now correctly terminates with a matching ')'.
+
+* Fri Sep 04 2003 Jurgen Botz <jurgen@botz.org>
+- parameterized rpm for '--without ssl' and '--with inusr'
+- parameterized version and release (use with --define)
+- use configure macro so all the paths are passed to configure
+  (this might help in future if more paths get used)
+- fixed the install and files sections to allow installing into
+  either /usr or /opt while conforming to FHS
+- shared directories shouldn't be owned by the package (i.e. /opt,
+  /etc, etc.)
+- use the doc macro to install doc files
+
+* Tue Sep 02 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- COPY now correctly reports errors with [TRYCREATE] if the destination
+  mailbox does not exist.
+- supervise files are now in service/ and not supervise/.
+- 1.2.1-1
+
+* Sun Aug 31 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Fixed so supervise/imaps/run and log/run are copied from the correct
+  source for "make install"
+- Fixed bug in STATUS with Maildir where only messages whose file names
+  started with a digit were counted.
+- bincimapd man page now has an ENVIRONMENT section.
+
+* Fri Aug 29 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Removed '-v' option from all 'rm'. This option is not defined on
+  OpenBSD.
+
+* Thu Aug 28 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Fixed problem with hanging bincimapd
+- Known bug: STATUS does not report correct UIDNEXT when there are recent
+  messages. A temporary fix has been added, which has a non serious race
+  condition.
+- 1.2.0-1
+
+* Sat Aug 23 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- BincStream is now a subclass of ostream again, after reports about
+  hanging processes.
+- Added "make cert" for creating an SSL certificate.
+- Changed default certificate location in bincimap.conf to the same
+  directory as bincimap.conf.
+- Passing --localstatedir to configure now sets the prefix for the log
+  dirs for multilog.
+- The log/run files now log to the localstate set directory.
+- Added version to README file.
+- "make install" no longer overwrites existing conf/run/xinetd files.
+- Added notice to end of "make install" output.
+- Now reports argument (hasn't done this for a while).
+
+* Fri Aug 22 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- RENAME now renames hierarchies of mailboxes correctly also when the
+  destination name is longer than the original name.
+
+* Sun Aug 17 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Fixes to mime-utils.h make it compile on more platforms.
+- TestBincStream binary is no longer installed
+- Depot code removed from bincimap-up, it doesn't belong there.
+- operator-logout doesn't have mailbox code in bincimap-up.
+- 1.2.0b1-1
+
+* Sat Aug 16 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Replaced fgetcCRLF with a buffering much simpler alternative. Also
+  with support for Mac files (so \r, \r\n and \n are all converted to
+  proper \r\n before processing). 20% speed increase on parser because
+  of this.
+- Fixed memory leak problem with fopen and open used on same file
+  descriptor.
+
+* Fri Aug 15 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Fixed bug where UID COPY treated sequence set as sequence numbers and
+  not UIDs.
+
+* Thu Aug 14 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Fixed link copying. Messages are now sorted by internaldate on first
+  select. Then it is sorted by arrival. This allows copying while keeping
+  internaldate. Note that we now keep both flags and internaldate when
+  copying or appending messages.
+- 1.1.9-1
+
+* Tue Aug 12 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Fixed issues with cache and losing file descriptors.
+
+* Mon Aug 11 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Decided to bump the cache version number because the new message
+  sorting algorithm gives a different order of arrival than before. This
+  forces all new clients to resync their mailboxes.
+
+* Thu Aug 07 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Any files in cur/ and new/ are treated as messages.
+- Internaldate of messages is now acquired by stating files and not
+  by simply inspecting the filename. 
+
+* Thu Jul 31 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Replaced all use of exceptions with return values, or sometimes by
+  ignoring errors that are not worth reporting.
+- Size of binaries is down by 35% when Binc IMAP now compiles with
+  -fno-exceptions. Those 35% extra were in the data segment,
+  and they were actually not shared among processes. No thanks to the
+  gcc team for bloating g++ binaries that use exceptions. :-)
+- Implemented full buffering of input and output. Earlier versions
+  read and wrote data byte by byte, all is now buffered.
+- COPY and APPEND operations now keep message flags.
+- Depot -> Mailbox -> Message API is greatly improved. There is now
+  no MIME or Maildir specific code in operators. Approaching point
+  where we can introduce more backends.
+- Mailbox iterator design is much better than before. Depot and Mailbox
+  iterators are implemented as proxy objects.
+- Improved processing of messages makes parser single-pass. Measurements
+  have shown a performance increase of over 40%.
+- Memory footprint of messages is smaller.
+- Maildir message cacheing is greatly improved, and controlled
+  completely by the MaildirMessageCache singleton. The File class is
+  gone.
+- Unsigned ints everywhere allow UID, UIDVALIDITY, sequence numbers
+  and sizes to be in the full range 0-4294967295.
+- Largefile support (O_LARGEFILE).
+- Renamed Command to Request (which is more accurate).
+- Renamed BincImapParserSet to SequenceSet.
+- Improved log output and error reporting.
+- Fixed a bug with subscribing to mailboxes. If you subscribed to a 
+  mailbox that didn't exist (which is ok), it wasn't listed in the
+  output of LSUB. Now it is, but with \NoSelect.
+- Added openlog patch, which fixes a problem with trash log output
+  when using syslog.
+- Added the subfolders patch, which fixes the bug where Binc IMAP
+  would claim that no subfolder creation was allowed, although it
+  was.
+- Switched main development platform to SuSe Linux, so now we have
+  SuSe packages (for 8.2) in addition to the RedHat packages.
+
+* Sat May 31 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Fixed bug in operator-capability.cc that did not advertise STARTTLS
+  correctly.
+
+* Fri May 30 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- All NULL replaced with 0.
+- Cosmetics on .h files, removed lots of whitespace.
+
+* Sun May 25 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- More work on the manual
+- Added manual to distro
+- 1.1.8-1
+
+* Fri May 23 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- FETCH ENVELOPE now correctly defaults sender and reply-to fields to
+  the from-field.
+
+* Thu May 22 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Applied Gerrit's patch to allow compile with gcc-3.3
+- Fixed a bug for strstream users in BincStream that assumed a
+  stream was 0-terminated after a clear() even though that wasn't
+  always true.
+- Fixed typo in operator-login.cc that disallowed plain text auth
+  in ssl connection.
+- Removed extensive logging from operator-append.cc
+- Added more contributors to AUTHORS file
+- Added Sergei's patch to install-exec-hook and uninstall-hook
+
+* Tue May 20 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Minor change to mailbox/mailbox.h allows linking of bincimap-up without
+  adding the mailbox library.
+- 1.1.7-1
+
+* Mon May 19 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Added short options support for the new argument parser. Now has
+  more logical short option characters than before.
+- Updated man pages with new short options
+- Removed the --debug argument completely. Use --ssl instead.
+- Added workaround for compiler bug using FreeBSD and gcc 2.95.x.
+- Wrote more on Binc manual.
+
+* Sun May 18 2003 Eivind Kvedalen <bincimap@eivind.kvedalen.name>
+- addCapability added to BrokerFactory
+- Default capabilities moved to CapabilityOperator::CapabilityOperator.
+- Old argument parser removed
+- New argumentparser implemented
+- Storage::hasKey added
+- Storage::get added
+- Command::extra is now public
+- Session::parseCommandLine added
+
+* Sun May 18 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Added first draft of the Binc IMAP manual.
+- Removed redundant getcwd() from bincimapd.cc.
+- Removed gnugetopt / getopt_long requirement.
+- Updated html documentation
+- Fixed a bug in FETCH with multipart extension data.
+- 1.1.6-1
+
+* Tue May 13 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Added basic statistics to log output when client logs off
+- A temporary hack in the mime parser was added to prevent empty mime
+  parts to have a negative size.
+- Added uninstall hooks.
+
+* Mon May 12 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- manpages are now installed correctly from the tarball.
+- log prefix is now fixed and enabled for multilog type logging only
+- getpid is only grabbed once in the IO constructor
+- Session now properly supports importing and exported data to environment
+- bincimapd no longer reads command line arguments or globalconfig,
+  but inherits them from the environment.
+- man pages for bincimap-up and bincimapd were updated with new command
+  line options (all are passed to bincimap-up)
+- service and xinetd files no longer pass configuration details to
+  bincimapd.
+- CAPABILITY no longer reports auth or starttls capabilities in
+  authenticated state
+- Removed excessive logging from LIST output.
+- Fixed "auto create inbox" functionality for both empty and non-empty
+  Mailbox paths, and for both IMAPdir and Maildir++.
+- Removed intercomerr tunnel from authenticate.cc
+- authenticate.cc exports state to environment before invoking
+  authenticator.
+- Added install hooks for service/ and service/log/ files
+- Added install hooks for xinetd and conf files.
+
+* Sat May 10 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- bincimapd now interprets command line args before anything else (allows
+  --version etc..)
+
+* Thu May 08 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Updated man pages to point to the bincimap.org site
+
+* Mon May 05 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Added Gerrit's be-nice patch "diff" to convert.h, replacing a switch
+  with a series of if-tests, working around a compiler bug on the Alpha
+  platform for FreeBSD and Debian ports.
+- LSUB now always sorts subscription list before showing it to the
+  client.
+- Removed log output from LOGIN - authenticate.cc logs enough already.
+- In authenticate.cc, jail is entered after first chunk of data (the
+  ok response) is written from bincimapd. Fixes bug where retrying a failed
+  password would always fail.
+- Improved log output in authenticate.cc.
+- Removed the kill(...) calls in authenticate.cc, they could lead to some
+  unintended behavior if pids cycle.
+- Improved log output in bincimap-up and bincimapd.
+- In INSTALL, inserted one line at top referring to README.
+- In README, cleaned up examples, added notes about securing the service.
+- Updated FAQ with notes on configuring mailboxes and submailboxes.
+- Fixed "make install" - added hooks that create the sysconfdir directories
+  and copy conf files to right places.
+- configure --prefix and --sysconfdir now have default values and are no
+  longer required arguments.
+
+* Wed Apr 23 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Moved addressToParenlist into Address class
+- Removed some switches from inline convert.h functions
+- Added Tools singleton class, meant to take over for convert.h,
+  regex.h etc.
+- Started working on exporting and importing whole session object
+  to/from environment.
+- Made some very minor improvements to log output in authenticate.cc
+- For Maildir, messages in new/ are now also counted as unseen. This
+  bug caused several clients to report the wrong number of unseen
+  messages.
+- Added some ostream and ostream.h includes to io.cc and added std::
+  prefixes.
+- SUBSCRIBE no longer checks if what you wish to subscribe to is a
+  valid mailbox.
+- COPY and SEARCH use dynamic arrays instead of stack allocated
+  arrays. This is to satisfy ISO C++ restrictions.
+- Removed some unused variables
+- umask is now read as an unsigned int
+- Cleaner exit in authenticate.cc after adding breaks
+- Fixed bug in LSUB output. Folders with dots and backslashes are
+  now properly supported.
+- 1.1.5-1
+
+* Thu Apr 10 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Removed optimization in LIST, as it turned out to give wrong
+  interpretation of leaf nodes. Improved algorithm is on its way.
+- Changes to BincStream's dummyclass for cross-platform compatibility
+- Project now compiles with "-Wall -ansi -pedantic". On some platforms,
+  only if SSL support is not included (OpenSSL headers do not always
+  compile under these restrictions). Only one warning is given in
+  greeting.cc where '%z' is not ISO C++.
+
+* Mon Apr 07 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Renamed BincImapParserCommand to Command
+- Fixed FETCH BODY, acted like BODY[]
+- Removed tunneling of log data, bincimapd and bincimap-up now log
+  seperately.
+- Fixed bug in APPEND parser which disallowed empty flag list.
+- 1.1.4-1
+
+* Sun Apr 06 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- LIST now first checks with the wildcard, then does a test for wether
+  or not it's a mailbox. Speed-up.
+
+* Fri Apr 04 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Fixed flags in LIST
+- LIST now uses Depot::iterator to find entries
+- LIST does not include elements that are not mailboxes unless they
+  qualify as superiors of mailboxes.
+- Minor fixes in Storage::save method now may be a bit faster.
+- Removed SSL comment in bincimap-up
+- Fixed wording in error message when running an undefined/disallowed
+  command
+- Removed some unused variables
+- Removed trailing CR from error when a syntax error is discovered in
+  storage files.
+- Minor change to storage grammar action might speed up parsing of storage
+  files a tad.
+- Fixes to BincStream allow it to work fine with iomanip/ostream
+  operators. Old strstream does not work.
+
+* Thu Apr 03 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Added Ben Schumacher's regex patch which fixes a regex problem under
+  FreeBSD.
+- Replaced all sstream/stringstream with BincStream, cleaning up the
+  code a bit.
+- Made delimiter in toRegex configurable.
+
+* Wed Apr 02 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- 1.1.3-1
+- Removed Local variables from everywhere
+
+* Tue Apr 01 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Created Status class, and added getStatus and getStatusID to Mailbox.
+- Moved much of StatusOperator process code into Depot.
+- In bincimap-up, IP from environment is now inserted into Session.
+- When unable to translate mailbox name to filename, Depot now gives
+  more comprehensible error message.
+- Removed some unused com/logger variables
+- Improved feedback from parser for some operators.
+- Added --with-ssl and --without-ssl to configure.
+
+* Mon Mar 31 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Added includes, fixing compile problems with FreeBSD.
+- Removed log info about operator exception
+
+* Sun Mar 30 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Fixed so STARTTLS starts an SSL negotiation. This broke in 1.1.2-1.
+
+* Sat Mar 29 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Added jail-path, jail-user and jail-group to argument list.
+- Updated man pages.
+- Added timeout to select in authenticate.cc
+- 1.1.2-1
+
+* Fri Mar 28 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Fixed segfault when calling bincimapd directly with invalid contents
+  of BINCIMAP_LOGIN in environment.
+- Added default umask 0777 if none is provided.
+
+* Thu Mar 27 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Moved create, delete and rename logics into Depot and out of Operators.
+  I'd like to enforce that only the Depot knows anything about the
+  map between file names and mailbox names.
+- Fixed a bug in rename that disallowed renaming a/b/c/d to e/b/c/d
+  unless a, a/b, a/b/c and a/b/c/d all existed.
+- Added bumpUidValidity method to Mailbox and Maildir
+- Moved compareNodes in search operator into SearchNodes class.
+- Added chroot, setgroups, setuid and setgid to bincimap-up stub. Added
+  configuration options to conf file in new "Security" section.
+- Created IOFactory singleton, which now handles IO objects correctly.
+- Seperated regular IO from SSL enabled IO. bincimapd does no longer link
+  against the ssl libraries and has no ssl code in it.
+- Stripped down libraries in bincimap-up, reducing code size.
+- Added NoopPendingOperator and removed pendingUpdates from regular NOOP
+  operator. bincimap-up uses only the stripped NOOPoperator. This allows
+  us to remove the pendingupdates code from bincimap-up.
+
+* Wed Mar 26 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Fixed a bug in the mime parser where the byte offset was used to seek
+  using fgetcCRLF. Replaced that with fseek and now fetching headers/mime
+  of sub-mimeparts is working fine again.
+- Fixed similar problem in mime-printbody, which now seeks using fseek.
+- bincimap-up now pipes log data from child.
+- Removed support from anything other than stderr logging from
+  authenticated daemon.
+- Cleaned up the logics in FETCH when fetching different types of BODY
+  data. Now supports fetch att MIME correctly.
+- 1.1.1-1
+
+* Tue Mar 25 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Added iterator to Depot class for stepping through depot entries
+- Added hierarchical rename
+- Fixed problem with some clients not allowing users to subscribe to
+  subfolders
+- APPEND now uses Depot to acquire file names
+- LIST and LSUB removes leading and trailing hierarchy delimiters
+- Added examine operator (missing in 1.1.0)
+- Set default "verify peer" to "no".
+
+* Mon Mar 24 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Updated README
+- Added technical documentation draft
+- Added IMAPdir spec draft
+- Removed usage.cc. Replaced with a pointer to man pages.
+- Added bincimap-up binary
+- authenticate.{cc,h} now sets up a tunnel between the client and the
+  authenticated daemon. SSL is managed by the unauthenticated stub.
+- Started enforcing conventions for formatting the source files. Document
+  is under progress.
+- bincimapd, now the authenticated daemon, can no longer do any SSL
+  related activity.
+- bincimapd now reads BINCIMAP_LOGIN from the environment to determine
+  what the response to the stub's authenticate or login commands should be.
+- To meet with checkpassword's conventions, bincimapd now exits with code
+  111 on internal errors.
+- Removed quite a lot of debugging info
+- const-ified more functions.
+- Added IMAPdir and MaildirPP classes
+- Removed greeting.h
+- showGreeting is now self declared.
+- Removed most of the hungarian notation in the main classes
+- Added Session instance where needed
+- LIST and LSUB now use Depot to identify mailbox types
+- Added access to argc and argv to Session
+- Added pending() method to IO, to check for pending data. Always 0 if not
+  MODE_SSL.
+- readChar can now return -2, meaning that in SSL mode the read call must
+  be repeated.
+- DELETE in maildir.cc can not delete mailbox (which was actually allowed
+  before)
+- Maildir now does not care about IMAP mailbox names, only file names.
+- Removed "singular" concept from args parser.
+- Updated xinetd and supervise run files to match new invocation method.
+- Added goals doc
+- LIST no longer sets \Marked
+- 1.1.0-1
+
+* Mon Mar 24 2003 Eivind Kvedalen <eivind@kvedalen.name>
+- Examine command added
+- SelectOperator now contains code for Examine command
+- SearchOperator now contains SearchNode class
+- Operator::parse is now an abtract method
+
+* Fri Mar 21 2003 Eivind Kvedalen <eivind@kvedalen.name>
+- select function call added to IO class
+- IO::readChar now takes a timeout argument
+- TimeoutException class added
+- ModuleException class added
+
+* Thu Mar 20 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Removed bincimap-auth-checkpassword and bincimap-uidpwd completely
+  from the project
+- Added privilege seperation. Unauthenticated daemon is bincimap-up.
+  Authenticated daemon is bincimapd. Only checkpassword compatible
+  authenticators are supported.
+- Enabled local config settings. Users can now choose path, default
+  Mailbox type and depot type (IMAPdir/Maildir++). Default is Maildir++.
+- Added full support for IMAPdir and Maildir++ via pluggable Depot
+  objects in DepotFactory.
+- Made DepotFactory and BrokerFactory singletons.
+- Made delimiter character a variable in depot.
+- Cleaned up some code. bincimap-up.cc and bincimapd.cc still look very
+  bad.
+- Added technical documentation draft to docs
+- Added updated FAQ to docs
+- Added IMAPdir spec draft to docs
+
+* Tue Mar 18 2003 Eivind Kvedalen <eivind@kvedalen.name>
+- Fixed error messages in the various implementations of 
+  the Operator::parse method.
+
+* Tue Mar 18 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Improved Storage::save algorithm
+- Improved Storage::load algorithm
+- Removed excessive logging
+- Changed pendingUpdates to optionally rescan for changes
+- Added speedup to SEARCH
+- Added minor speedup to fgetcCRLF functions
+- Storage now saves in PRETTIFY mode instead of MINIMIZE. Adds speed.
+  The MINIMIZE algorithm is undergoing maintenance.
+- Moved subscribed, cmdargs, globalconfig, localconfig, userid, ip
+  and state into new singlton called Session.
+- Added session.cc and session.h
+- Moved RETURN enum into Operator
+- Moved STATE enum into Session
+- Removed bincimapd-config.{cc,h}, bincimapd.h, bincimapd-commands.{cc,h}
+- Added initconfig.cc with most of bincimapd-config.cc's old content.
+
+* Mon Mar 17 2003 Eivind Kvedalen <eivind@kvedalen.name>
+- Clean-up in depot.h
+- getOperator added to Broker
+- parse() method added to Operator classes
+- parse() method implemented in operators. Code moved from
+  recursivedescent.cc
+- BincImapParserData added to BincImapParserCommand class
+
+* Mon Mar 17 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Fixed a silly bug in SEARCH UID which caused a segfault.
+- authenticate() now takes a Depot as input.
+- Initial mailbox create (INBOX) is done with default mailbox from
+  Depot
+- pendingupdates() now takes a Mailbox as input
+- Removed global mailbox pointer from bincimapd-config.{cc,h}
+- Changed error when expecting set instead of string in recursivedescent.cc
+- Weaved in Depot support in all operators
+- Removed references to global mailbox pointer.
+- Added rollback to UID operator parsers.
+
+* Sun Mar 16 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Constified loads of variables in Operators
+- Added BincException. All Exceptions now inherit BincException.
+- Added Depot. Broker now processes the Depot with the Operator 
+- Made Operators' process method const.
+
+* Sat Mar 15 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- First stage of new design incorporated. Brokers and Operators are
+  introduced.
+- Converted all functions to operators that work properly.
+- Added support for IMAPdir schema.
+- Maildir::imapCreate no longer adds the "maildirfolder" file to the
+  depository.
+
+* Fri Mar 14 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Removed all other namespaces than Binc. We are moving to a more
+  object oriented approach.
+
+* Thu Mar 13 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Renamed MessageDepot to Mailbox
+
+* Tue Mar 11 2003 Eivind Kvedalen <eivind@kvedalen.name>
+- Plain authentication bug fixed
+- New iterator has been added to MessageDepot class
+- Caching of previous messages moved to MessageDepot class.
+
+* Tue Mar 11 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Auth method no longer uses environment. Uses netstrings.
+- Support for gnugetopt (FreeBSD) - untested. Removed support for regular
+  getopt. getopt_long is now required.
+- Updated FAQ
+- Improvements in "auto create inbox".
+- 1.0.25-2
+
+* Fri Mar 07 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Added function toCanonMaildir to util
+- Fixed a bug in mime-parseheader.cc that didn't set the header length.
+- Fixed a bug in imapparser.cc that prevented "FETCH *" requests.
+- Moved imap close, select, delete, create, expunge,  functionality to
+  maildir class
+- Some cleanups in message depot
+- Several functions now use toCanonMailbox
+- Cleaned up bincimapd-select.cc
+- SEARCH now does not parse header if whole message has already been parsed.
+- Better error reporting in most imap functions
+- Big speedup in LIST by eliminating unnecessary stats
+- Fixed a problem with parsing content type header
+- FETCH now only parses header if only header is fetched. (bugfix)
+- In authenticate(), depot object is created and lives throughout the
+  life of the imap session.
+
+* Tue Mar 04 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Removed inlining from recursivedescent.cc - if the user wants these
+  inlined, he can compile the source with -O3.
+- Cleaned up all Makefile.am files. Removed tab indentation and threw
+  all files on one line. This hopefully removes automake's funny "seperator
+  missing" complaints.
+- Fixed a bug that prevented a user from fetching only '*'.
+- Removed stray blank (0x20) character that was printed as part of the
+  bodystructure response.
+
+* Mon Mar 03 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Added exception to COPYING for linking against OpenSSL
+- Added COPYING.OpenSSL
+- Added GPL note to README
+- Some cleanup in getopt code
+- Added Caskey Dickson's setuid/setgid patch
+- Added Caskey's copy patch
+- Cleaned up the IO code
+- Removed repr() and syntaxexception code from imapparser
+- Moved DELETE into Maildir code
+- Cleaned up create and delete code
+- Added create and delete properly to MessageDepot
+- Added Syntax exception code to exceptions.cc
+- Added stderr as a logtype option. It's equivalent to multilog.
+- Moved case converted mailbox name out as seperate function
+
+* Sat Feb 22 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- 1.0.24-1
+- Added GPL notices to all files
+- Gathered all exceptions into one global exceptions file
+- Storage class creates shorter aliases than before
+- Removed lex/yacc code from argument parser - replaced with getopt
+- Fixed Maildir++ complaince in maildir-create.cc
+- Fixed message size cacheing
+- IO class is no longer a subclass of ostream
+- bincimap-uidpwd uses getcwd and not get_current_working_dir
+- Added --disable-starttls functionality, and added it to config, usage
+  and man pages.
+- Cleaned up man pages more - added copyright notice
+- Added FAQ to docs
+- Added contrib area, all contribs are now bundled.
+- Some bincimap.conf settings have changed. Defaul for allow plain auth
+  is "no".
+- Minor updates to README
+- Moved usage function to seperate file, out of bincimapd.cc
+- Moved some configuration details into bincimapd-config.cc
+- Now alternatively reads environment variable set in configuration
+- All conf file settings can be properly overrun with command line options,
+  except authenticators.
+- In authenticate.cc, proper handling of nonexistant root Maildir
+- Append sleeps for a second before returning to ensure IMAP integrity
+  rules with APPEND.
+- Removed comments about Outlook ;)
+- CAPABILITY does not advertise STARTTLS if --disable-starttls is passed
+- COPY moves chunks of 8k at a time instead of only one byte
+- FETCH only full-parses a message at an RFC822.SIZE request if the
+  size is not already cached.
+- LOGOUT no longer cares what's happened to the subscription list
+- RENAME says that renaming inbox is not supported, and it properly
+  explains that you can't rename a folder _to_ INBOX.
+- SEARCH parses messages if LARGER or SMALLER is queried for, and if the
+  size is not already cached.
+- STARTTLS will not run if --disable-starttls is passed
+- Restructured the RPM file.
+
+* Sun Feb 16 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- 1.0.23-1
+- Fixes to the man pages
+- Running bincimapd with --version shows version
+- Running bincimapd with --help shows complete command line option list
+- All conf settings are also command line settings
+- Removed option to set CA search path - use the CA file instead
+- Fixed problem with LSUB requiring user to quote wildcards
+- Auth timeout must be larger than 30
+- 1.0.23-2
+- Fixed a problem with CREATE which prevented users from creating
+  new folders. The new/ and tmp/ folders could also be removed by
+  mistake in this release.
+
+* Sat Feb 15 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- It's no longer allowed to create folders called INBOXsomething, without
+  the dot.
+- Added buffers to IO class to allow logging SSL errors.
+- updateFlags in Maildir:: no longer tries to update flags where no updates
+  have been made.
+- All auth modules are now pure C++
+- APPEND, COPY, CREATE, DELETE, RENAME, STATUS checks for valid
+  Maildir through toMaildir function
+- APPEND now fsyncs correct directory
+- Fixed the problem with server rejecting "syslog" as logtype in conf file.
+- Fixed putenv support in authenticate
+- Fixed log output in authenticate
+- conf files now use only --prefix
+- package is now prefixed
+- Split up maildir implementation and mime parser into smaller files
+- Added Ivan F. Martinez' teapop authenticator to contrib/authenticators
+
+* Tue Feb 11 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Removed all the C debug code (for SSL) from the IO class
+- Made SSL cipher list configurable
+- General clean up in IO class, better error messages.
+- SSL peer verification is now optional
+- Make install problems are now solved, and conf files are generated
+  correctly. Only one prefix needed to build the package.
+- Man pages! ^_^
+
+* Mon Feb 10 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Fixed problem with input parser "lock-up". The error was that the
+  output wasn't flushed.
+- IO class doesn't run openlog twice if both command line args and
+  conf file say to use syslog.
+
+* Sun Feb 09 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- 1.0.22-1
+- Fixed myisprint, allowing Storage class to save correctly.
+- Inserted prefix in spec file, as a first attempt to make the
+  package relocatable.
+- Replaced setenv with putenv, allowing compile on Solaris
+- LIST now shows nonexisting inferior mailboxes, with the NoSelect
+  flag set.
+- COPY now uses time(NULL) instead of passed timestamp when storing
+  messages in destination folder.
+- No longer creates .bincimap if none exists.
+
+* Sat Feb 08 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- 1.0.21-1
+- Minor changes to README
+- Added Log section with log type in config
+- Added "auto create inbox" to config - valid are "yes" or not "yes"
+- Added "auto subscribe mailboxes" for when no subscribed file is found
+- Added "umask" to Mailbox section - decides umask for whole session
+- Transfer timeout is now used correctly
+- Renamed regex files to 'regmatch' to avoid collision with posix regex
+- PCRE was removed - in goes posix regex library
+- Fixed toMaildir function to return relate rather than absolute path
+- Removed PCRE dependencies everywhere
+- Added fsync patch for file systems that don't support it - thanks
+  to Caskey Dickson for spotting this.
+- Removed debug logging from Storage implementation.
+- Moved mailbox creating into messagedepot and maildir classes.
+- Added mode, owner and group settings when creating mailboxes.
+- Added syslog support to IO class - somewhat messy, prefixed
+- Changed <wait.h> to <sys/wait.h> everywhere
+- Removed artifact from checkpassword auth stub, allowing use of non-passwd
+  based authenticators
+- Removed debug logging from pendingUpdates
+- All config settings are now read from global config file and used.
+- Added command line option --logtype to override log type settings
+- Subscription changes are now immediately saved to disk
+- STATUS now reports all recent for mailboxes with no cache file
+- LOGIN now correctly checks if plain text auth is allowed
+- LIST now search relative to cwd, instead of from /
+- Un-inlined some functions in FETCH do reduce memory exhaustion during
+  compile. The inlines are unnecessary.
+- CREATE now uses messagedepot::create
+- CAPABILITY now reports correctly whether or not plain text auth is
+  allowed.
+- AUTHENTICATE now interprets config correctly wrt plain text auth
+- authenticate function now always chdir's into Maildir.
+- non chroot should work properly now
+- All elements in "auto subscribe mailboxes" are inserted into the
+  subscribed list if there is no subscribed list. The list is then
+  saved to disk.
+- Subscribed list is saved to current directory instead of /
+- Checks for libdl, provides smooth compile under FreeBSD
+- Added logtype to service and xinetd files
+- xinetd files are now equal for ssl and non-ssl, except for the --ssl
+  option.
+- cleaned up configure.in a bit.
+
+* Tue Feb 04 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- 1.0.19-1
+- When a new cache file is created, all messages are not marked as recent
+  as before
+- Fixed big bug with expunged messages.
+- Bumped cache & uidvalidity file version to avoid problems with messed
+  up cache files from expunge bug.
+- SSL settings from conf file are now used in IO class
+- 1.0.20-1
+- Fixed bug: subscription folders are now read as the user authenticates
+- Fixed potential buffer overflow with improper use of sprintf
+- Fixed service file "xinetd-bincimaps" with relocatable files
+- Added README which describes installation procedure with tarball.
+
+* Sun Feb 02 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- 1.0.18-1
+- Added config.h support
+- Removed -j 2 from spec file
+- Removed Config class, replaced all uses with Storage
+- Compatibility: prefixed all namespace std-includes with ::.
+- Added more GPL headers to source
+- Added BEFORE, BODY, KEYWORD, ON, SINCE, UNKEYWORD, SENTBEFORE,
+  SENTON, SENTSINCE to SEARCH
+- More compatibility for lacking sstream support (untested)
+- Now allows STORE operations with empty flag list ()
+- Removed "fromhex" binary from distro
+- Fixed autoconf/automake problems with defining correct variables
+  on all known platforms.
+- Removed traces of per-ip-subscription
+- Almost all configurable settings can now be set through config file
+- time and flags are ignored in APPEND, because the former implementation
+  and any implementation doing otherwise stands in risk of losing mails
+  in the depository.
+- lex/yacc files are now not processed unless by explicitly performing
+  a "make grammar" in the args/ and storage/ directories.
+- Fixed bug in STATUS which reported negative number of RECENT messages
+- COPY no longer stores time stamp or flags
+- Now correctly shows LOGINDISABLED in non-SSL mode if plain auth is
+  not supported.
+- Support for AUTH=PLAIN - required by the protocol.
+- supervise and xinetd files are now generated and follow configure
+  prefices, except the log files.
+- Fixed bug with expunge and flag updates not getting reported properly
+
+* Sat Jan 25 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Added special case for not cacheing status folders with
+  messages in new/ less than one second old
+
+* Tue Jan 21 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Added support for RENAME. Does not yet support hierarchical rename.
+- Fixed a race condition with not detecting folder changes.
+- Added compatibility settings in build process (sstream->strstream for
+  old compilers, untested)
+
+* Mon Jan 20 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Added workaround for Outlook's broken "Inbox" prefix. If the uppercased
+  mailbox name is "INBOX", then it is set to "INBOX". If the uppercased
+  prefix of the mailbox is "INBOX.", then the prefix is replaced with
+  "INBOX.". This allows Outlook's "Inbox.subfolder" behavior.
+
+* Sun Jan 19 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- Fixed bug with lock file when selecting invalid maildir
+- Now only moves files from new/ to cur/ if time_t part shows file is
+  older than one second.
+- Never uses rename - always uses link() to prevent files from getting
+  lost.
+- Fixed fetch problem because of case sensitive matching on mime headers
+- Added --enable-static option to configure
+- STATUS now returns correct number of RECENT messages.
+- Added EXAMINE
+- Speed up in scan() first checks for folder chance using stat
+- Only 5 log files are kept, and they are rotated at 1MB.
+- Fixed problem with gcc2 interpreting setw and setfill different from
+  gcc3, causing Binc IMAP compiled with gcc2 to sort messages wrongly.
+
+* Mon Jan 13 2003 Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+- AUTHENTICATE no longer requires first argument to be upper case
+- Removed some debug info from the log files
+- Fixed problem with getting kicked off when the uidvalidity bounces
+  at first select.
+
+#-----------------------------------------------------------------------
+# Local variables:
+# mode: rpm-spec
+# End:

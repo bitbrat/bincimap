@@ -1,0 +1,285 @@
+.TH bincimap.conf 5
+.SH "NAME"
+bincimap.conf \- Global configuration file for
+.B Binc IMAP
+
+.SH "EXAMPLE"
+A section of a bincimap.conf file might look something like this:
+
+.RS
+.nf
+Authentication {
+    allow plain auth in non ssl = "no",
+    auth penalty = 4,
+    disable starttls = "no"
+}
+.fi
+.RE
+
+
+.SH "INTRODUCTION"
+
+This manual page describes the format and content of the
+file
+.I bincimap.conf.
+First comes a summary of sections of options that users can set, then
+we describe the bincimap.conf structure more in detail.
+
+All
+.B Binc IMAP's
+configuration files use the same
+.B Binc::Storage
+format. It's basically a sequence of named
+.B sections
+enclosed in
+.B {braces},
+each containing a set of comma separated
+.B key=value
+pairs. The
+.B keys
+must be alphanumeric, and the values can contain
+any character if it's
+.B quoted.
+
+.SH "SUMMARY"
+
+Options are presented in the format
+.B Section::name.
+To set the option, enter the name with no quotes in the section
+as described in
+.B FORMAT
+below.
+
+The following options can be set in 
+.I bincimap.conf.
+
+.TP
+\fBAuthentication::allow plain auth in non ssl = [yes|no] \fR
+If yes, allows plain text authentication in an unencrypted (SSL/TLS)
+IMAP session.
+
+.TP
+\fBAuthentication::auth penalty = <n>\fR
+Server will sleep for <n> seconds if the client issues a
+username/password pair that fails to authenticate.
+
+.TP
+\fBLog::environment ip variable = <var>\fR
+Which environment variable bincimapd should search for the
+remote host IP in.
+
+.TP
+\fBLog::syslog facility = <var>\fR
+If syslog mode is used, sets the facility to log to. Default
+is LOG_DAEMON. Allowed values are LOG_USER and LOG_LOCAL0-LOG_LOCAL7.
+
+.TP
+\fBLog::syslog facility number = <nr>\fR
+If syslog mode is used, sets the facility number to log to. Default
+is the value of LOG_DAEMON.
+
+.TP
+\fBLog::type = <type>\fR
+Which method
+.B Binc IMAP
+should use to log.
+.I syslog
+means to connect to syslog.
+.I multilog
+means to log to stderr(2). Typically used together with
+the
+.I multilog
+utility. For xinetd, use
+.I syslog.
+For daemontools/supervise, use
+.I multilog.
+
+.TP
+\fBMailbox::type = <type>\fR
+Which type of mailbox should the server use? By default, only supports only
+.B Maildir.
+
+.TP
+\fBMailbox::depot = <type>\fR
+Which type of depot should the server use? By default, supports only
+.B IMAPdir
+and
+.B Maildir++.
+
+.TP
+\fBMailbox::path = <path>\fR
+Path to depot relative from user's home area. Typically
+.B Maildir
+for Maildir mailboxes, or the empty string "" if the home area is
+the same as the Maildir directory.
+
+.TP
+\fBMailbox::auto create inbox = [yes|no]\fR
+If yes, server will create the default mailbox
+.B INBOX
+on first login if it does not exist.
+
+.TP
+\fBMailbox::auto subscribe mailboxes = <mailboxes>\fR
+If present, server will
+automatically subscribe client to the given list of mailboxes on first
+login. Mailbox list is given as a comma separated list with the
+mailbox' full path, for example
+.I INBOX,INBOX.Sent-Mail,INBOX.Trash
+.
+
+.TP
+\fBMailbox::umask = <umask>\fR
+Server will use this umask throughout session. Defaults to user's
+default umask.
+
+.TP
+\fBSecurity::jail path = <path>\fR
+Which path bincimap-up should chroot to after starting bincimapd.
+
+.TP
+\fBSecurity::jail user = <userid>\fR
+Which user bincimap-up should become after starting bincimapd.
+
+.TP
+\fBSecurity::jail group = <groupid>\fR
+Which group bincimap-up should enter after starting bincimapd.
+
+.TP
+\fBSecurity::version in greeting = [yes|no]\fR
+When set to "yes", Binc IMAP will display its version number in the
+greeting displayed to clients when they connect; otherwise no version
+number is displayed. This version number is useful for debugging and
+identifying the service, but it is also useful for malicious users who
+wish to identify versions to exploit known security holes.
+
+.TP
+\fBSession::idle timeout = <n>\fR
+When the server is in authenticated mode, and does not detect any
+client activity, it will wait <n> seconds before closing (t/o) the
+connection. <n> can not be less than 1800 seconds.
+
+.TP
+\fBSession::auth timeout = <n>\fR
+When the server is in unauthenticated mode, and does not detect any
+client activity, it will wait <n> seconds before closing (t/o) the
+connection. <n> can not be less than 30 seconds.
+
+.TP
+\fBSession::transfer timeout = <n>\fR
+The server writes data to the client in bulks. Each bulk gets <n>
+seconds to complete before the server times out.
+
+.TP
+\fBSession::transfer buffer size = <n>\fR
+The server will buffer up to <n> bytes of data before sending it off
+to the client. A lower value will give smoother response from the
+server, but is a bad idea for clients with a big RTT (for example
+dial-ins). A high value gives better throughput, but a more bulky
+transfer.
+
+.TP
+\fBSSL::pem file = <file>\fR
+The path to the SSL certificate file, in PEM format.
+
+.TP
+\fBSSL::ca file = <file>\fR
+A file used to list certificate authorities in. It is sent to the
+client to help the client verify the SSL certificate.
+
+.TP
+\fBSSL::cipher list = <cipherlist>\fR
+Sets the list of available SSL ciphers.
+
+.TP
+\fBSSL::verify peer = [yes|no]\fR
+If yes, server will attempt to verify peer certificate.
+
+.SH "FORMAT"
+
+This file format is named
+.B Binc::Storage,
+after its C++ class name.
+
+The file starts with an optional list of aliases. These aliases start
+with a question mark '?', followed by the alias, a colon ':', the
+replacement text, and finally a semicolon ';'. This example defines
+the alias "m" to represent the text "myfirstsection":
+
+.RS
+.nf
+?m:MyFirstSection;
+.fi
+.RE
+
+A section starts with an identifier, or a name. The name contains only
+alphanumeric characters, and it's case sensitive. The section itself
+is enclosed in braces.
+
+.RS
+.nf
+MyFirstSection {
+
+}
+.fi
+.RE
+
+Inside a section, we have a comma separated list of
+.B key=value
+pairs. The key consists of a sequence of one or more alphanumeric
+words. The value can also contain quoted strings.
+
+.RS
+.nf
+MyFirstSection {
+  certificate path = "/etc/path/certificate.txt",
+  optional argument = "yes"
+}
+.fi
+.RE
+
+The
+.B aliases
+that we could define at the start of the
+.B bincimap.conf
+file are useful if we wish to abbreviate long words in a key
+or section name, to save space. Normally this is only used
+in generated files, but they can also make a manually edited
+conf file more compact:
+
+.RS
+.nf
+m {
+  certificate path = "/etc/path/certificate.txt",
+  optional argument = "yes"
+}
+.fi
+.RE
+
+.SH "COPYRIGHT"
+Copyright (C) 2002, 2003 Andreas Aardal Hanssen
+
+This is free software; see the source for copying conditions. There is
+NO warranty.
+
+.SH "NOTE"
+Please report any bugs to the
+.B Binc IMAP
+mailing list. Before posting your bug, check out the
+.B Binc IMAP
+official home page for a list of mailing list archives
+to browse.
+
+.RS
+.nf
+Mailing list: <lists-bincimap@infeline.org>
+Home page: http://www.bincimap.org/
+.fi
+.RE
+
+.SH "AUTHOR"
+Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+
+.RE
+.SH "SEE ALSO"
+bincimapd(1) bincimap.conf(5) multilog(8) supervise(8) tcpserver(1) xinetd(8) xinetd.conf(5)

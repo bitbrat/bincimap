@@ -1,0 +1,118 @@
+/* -*- mode:java -*- */
+
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+
+// You should have received a copy of the GNU General Public License
+// along with this program; if not, write to the Free Software
+// Foundation, Inc., 59 Temple Street #330, Boston, MA 02111-1307,
+// USA.
+
+// Global configuration file for Binc IMAP. Some settings in this file
+// can be overrun with command line arguments.
+
+//----------------------------------------------------------------------------
+Authentication {
+    allow plain auth in non ssl = "no",            /* allow login or
+                                                      authenticate
+                                                      when not in
+                                                      SSL/TLS mode */
+
+    auth penalty = 4,                              /* on auth failure,
+						    * server sleeps so
+						    * many seconds
+						    * before allowing
+						    * client to
+						    * authenticate
+						    * again.
+						    */
+    disable starttls = "no"
+}
+
+//----------------------------------------------------------------------------
+Security {
+    jail path = "@prefix@/bin",
+    jail user = "nobody",
+    jail group = "nobody"
+}
+
+//----------------------------------------------------------------------------
+Log {
+    type = "syslog",                             /* supports
+						    * multilog or
+						    * syslog or
+						    * stderr (for testing).
+						    */
+    environment ip variable = "TCPREMOTEIP"
+}
+
+//----------------------------------------------------------------------------
+Mailbox {
+    depot = "Maildir++",                           /* Use Maildir++ style
+						    * depot. */
+
+    type = "Maildir",                              /* only Maildir
+						    * support */
+
+    path = "Maildir",                              /* default path */
+
+    auto create inbox = "yes",                     /* create INBOX in
+						    * given format if
+						    * it doesn't
+						    * exist.
+						    */
+
+    auto subscribe mailboxes = "INBOX",            /* list mailboxes
+						    * in one string,
+						    * seperated by
+						    * commas
+						    */
+
+    umask = "077"                                  /* use this umask
+						    * when creating
+						    * mailboxes, or
+						    * when copying and
+						    * appending
+						    * messages.
+						    */
+}
+
+//----------------------------------------------------------------------------
+Session {
+    idle timeout = 1860,                           /* idle timeout in
+						      seconds */
+
+    auth timeout = 60,                             /* timeout before
+						      auth in
+						      seconds */
+
+    transfer timeout = 1200,                       /* timeout per
+						      transferred com
+						      unit (I/O) */
+
+    transfer buffer size = 1024                    /* number of bytes
+                                                      to buffer before
+                                                      passing on to
+                                                      client. */
+}
+
+//----------------------------------------------------------------------------
+SSL {
+    pem file = "@sysconfdir@/bincimap.pem",        /* private key and
+                                                      certificate
+                                                      chain PEM file
+                                                      name */
+
+    ca file = "",                                  /* file to use as
+                                                      certificate
+                                                      authority */
+
+    cipher list = "!ADH:RC4+RSA:HIGH:MEDIUM:LOW:EXP:+SSLv2:+EXP",
+
+    verify peer = "no"
+}
+
+//----------------------------------------------------------------------------
+      /* $Id: bincimap.conf.in,v 1.2 2003/08/23 12:53:25 andreaha Exp $ */

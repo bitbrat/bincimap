@@ -1,0 +1,257 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML>
+
+<HEAD>
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+  <META HTTP-EQUIV="Content-Language" CONTENT="en">
+
+  <TITLE>Binc IMAP - IMAPdir</TITLE>
+  <META NAME="revisit-after" CONTENT="14 days">
+  <META NAME="keywords" CONTENT="Binc IMAP imapdir checkpassword daemontools tcpserver xinetd Maildir qmail">
+  <META NAME="description" CONTENT="Andreas Aardal Hanssen">
+  <META NAME="copyright" CONTENT="Copyright Andreas Aardal Hanssen 2002, 2003">
+  <META NAME="distribution" CONTENT="global">
+  <META NAME="author" CONTENT="Andreas Aardal Hanssen">
+  <LINK REL="stylesheet" HREF="bincimap.css" TYPE="text/css">
+  <LINK REL="icon" HREF="/favicon.ico" TYPE="image/ico">
+  <LINK REL="shortcut icon" HREF="/favicon.ico">
+
+</HEAD>
+
+<BODY BGCOLOR="#000000">
+
+<TABLE WIDTH="95%" ALIGN="CENTER" CELLSPACING="0" CELLPADDING="4">
+<TR>
+<TD BGCOLOR="#004444">
+
+<TABLE WIDTH="99%" ALIGN="CENTER" CELLSPACING="0" CELLPADDING="4">
+  <TR>
+    <TD CLASS="headtext" BGCOLOR="#226666" ALIGN="LEFT">
+      <TABLE>
+        <TR>
+          <TD ALIGN="center" VALIGN="middle"><IMG ALT="Binc IMAP logo" SRC="b-button64.png" BORDER="0"></TD>
+          <TD ALIGN="center" VALIGN="middle">Binc IMAP - IMAPdir</TD>
+        </TR>
+      </TABLE>
+    </TD>
+    <TD CLASS="bodytext" BGCOLOR="#226666" ALIGN="RIGHT">
+        <A HREF="http://www.gnu.org/licenses/gpl.html">GNU General Public License</A><BR>
+        Andreas Aardal Hanssen &lt;andreas@hanssen.name&gt;
+    </TD>
+  </TR>
+  <TR>
+    <TD CLASS="bodytext" BGCOLOR="#FFFFFF" COLSPAN="2"></TD>
+  </TR>
+</TABLE>
+
+<DIV CLASS="bodytext">
+
+<BLOCKQUOTE>
+
+<P>This document describes the generic mail folder structure
+<B>IMAPdir</B>.</P>
+
+<P>The goal of the work behind this specification is to provide the
+community with an unambiguous representation of a mailbox hierarchy
+where a mailbox name has a one-to-one match against a file system
+representation. The hierarchy and naming style is inspired by the
+IMAP4 protocol.</P>
+
+<P>Rather than being a completely new mailbox format, this specification
+sets conventions on how to represent a mailbox hierarchy on a file
+system, using existing mailbox formats. <B>IMAPdir</B> is not bound to
+any protocol.</P>
+
+<P><B>IMAPdir</B> works with any mailbox format where one mailbox can
+be identified by a file, a directory or a symbolic link. One entry in
+an <B>IMAPdir</B> folder is a candidate for a mailbox. If the
+<B>IMAPdir</B> client can not identify a directory entry as a
+selectable mailbox, then the client must either skip the entry or
+mark it as invalid (in IMAP, marked as \NoSelect).</P>
+
+<UL>
+<LI>There is no limitation to the type of file system or the number of
+file systems represented inside an <B>IMAPdir</B>.</LI>
+<LI>There are no reserved ordinary folder
+names such as "Sent", "Draft" or "Trash".</LI>
+<LI>Clients of the mailboxes inside an <B>IMAPdir</B>
+folder <I>must</I> follow the respective format and protocol conventions
+strictly.</LI>
+</UL>
+
+<P>The format of a mailbox representation in <B>IMAPdir</B> is a
+sequence of one or more US-ASCII characters (32-126), encoded using
+the following rules:</P>
+
+<UL>
+<LI>A dot '.' character represents a soft hierarchy delimiter with two exceptions:
+  <UL>
+  <LI>A leading dot represents the dot itself.</LI>
+  <LI>A dot '.' preceded by a backslash '\' represents the dot '.' itself.</LI>
+  </UL>
+</LI>
+<LI>A backslash '\' preceded by a backslash '\' represents the backslash '\' itself. For all other cases than before a dot '.' or a backslash '\', a stray backslash '\' character is considered an error.</LI>
+<LI>A backslash '\' as the first character of an entry is considered an error.</LI>
+<LI>All other characters represent themselves.</LI>
+</UL>
+
+Note that the protocol used to fetch the mailbox using the
+structuring <B>IMAPdir</B> convention may restrict the character set
+allowed. The clients <I>must</I> in those cases translate the mailbox
+names to a selectable format.
+
+<P>As with <A
+HREF="http://www.inter7.com/courierimap/README.maildirquota.html">Maildir++</A>,
+submailboxes can not be represented in a recursive fashion in the file
+system. The mailbox' representation name will contain the soft
+hierarchy delimiter character dot '.', and all mailboxes must reside
+in the same root level directory.</P>
+
+<P>The following example shows the typical content of an
+<B>IMAPdir</B> stored under the directory <B>mail/</B>. The <B>file
+system</B> column displays the contents as viewed by the UNIX command
+'ls -al -F'.</P>
+
+<TABLE ALIGN="center" CELLSPACING="5" CELLPADDING="5">
+  <TR>
+    <TH BGCOLOR="#555555">File system
+    </TH>
+    <TH BGCOLOR="#555555">IMAP
+    </TH>
+    <TH BGCOLOR="#555555">Description
+    </TH>
+  </TR>
+  <TR>
+    <TD BGCOLOR="#555555">
+      <PRE>
+mail/INBOX -> /var/mail/paul
+mail/INBOX.old/ -> ../Maildir/
+mail/INBOX.outbox/
+mail/work
+mail/3rd\. of July
+mail/Sent.2003.Jan/
+mail/Sent.2003.Feb/
+mail/Sent.2003.Mar/
+mail/.foo
+      </PRE>
+    </TD>
+    <TD BGCOLOR="#555555">
+      <PRE>
+"INBOX"
+"INBOX/old"
+"INBOX/outbox"
+"work"
+"3rd. of July"
+"Sent/2003/Jan"
+"Sent/2003/Feb"
+"Sent/2003/Mar"
+".foo"
+      </PRE>
+    </TD>
+    <TD BGCOLOR="#555555">
+      <PRE>
+Symbolic link to mbox
+Symbolic link to Maildir
+Maildir
+mbox
+mbox
+Maildir
+Maildir
+Maildir
+mbox
+      </PRE>
+    </TD>
+  </TR>
+</TABLE>
+
+<P>In other multi level mailbox formats, <B>INBOX</B> is treated as a
+special case.</P>
+
+<BLOCKQUOTE>
+  <P><U><B>Maildir++</B></U></P>
+
+  <UL>
+  <LI><A
+  HREF="http://www.inter7.com/courierimap/README.maildirquota.html">Maildir++</A>
+  defines the mail directory itself as
+  <B>INBOX</B>. Any subdirectories inside starting with a single dot
+  '.', and containing the file <B>maildirfolder</B> are interpreted as
+  a <A
+  HREF="http://www.inter7.com/courierimap/README.maildirquota.html">Maildir++</A>
+  submailbox.
+
+  <LI><P>A <A HREF="http://cr.yp.to/proto/maildir.html">Maildir</A> is by
+  Dan J. Bernstein's definition identified by a directory that
+  contains the subdirectories <B>cur</B>,
+  <B>new</B> and <B>tmp</B> and nothing else.</LI>
+
+  <LI>The <A
+  HREF="http://www.inter7.com/courierimap/README.maildirquota.html">Maildir++</A>
+  definition follows naturally from <A
+  HREF="http://www.inter7.com/courierimap/README.maildirquota.html">Maildir++</A>
+  being an extension to Dan J. Bernstein's <A
+  HREF="http://cr.yp.to/proto/maildir.html">Maildir</A>
+  format. However, although the directory ~/Maildir/ itself is a
+  standard representation of INBOX for <A
+  HREF="http://cr.yp.to/proto/maildir.html">Maildir</A> clients, it is
+  not standard for other mailbox formats. With <A
+  HREF="http://www.inter7.com/courierimap/README.maildirquota.html">Maildir++</A>,
+  your mailboxes and INBOX in particular must be a <A
+  HREF="http://cr.yp.to/proto/maildir.html">Maildir</A>.
+  </UL>
+
+  <P><U><B>mbox</B></U></P>
+
+  <UL>
+  <LI>When using the <B>mbox</B> storage format, the user's INBOX is typically
+  stored at /var/spool/mail/&lt;username&gt;.</LI>
+
+  <LI>Using this format, the mail depository client must both have the
+  path to the user's INBOX <I>and</I> the path to the user's local
+  mailbox depository, typically <B>mail/</B>.</LI>
+  </UL>
+
+</BLOCKQUOTE>
+
+<P>Note that although <B>IMAPdir</B> has no restrictions with regards
+to mailbox names, the protocol that uses <B>IMAPdir</B> might. For
+example, IMAP servers will require the mailbox <B>INBOX</B> to be
+present.</P>
+
+<HR>
+
+<P>Last updated on <B>2003-03-20</B>.</P>
+
+<P>Please direct comments to <B>IMAPdir</B> or this document to the
+<A HREF="/#mailinglist">Binc IMAP mailing list</A>. Remember to <I>search the archives</I>
+first.</P>
+
+</BLOCKQUOTE>
+
+<TABLE WIDTH="99%" ALIGN="CENTER" CELLSPACING="0" CELLPADDING="4">
+  <TR>
+    <TD CLASS="bodytext" BGCOLOR="#FFFFFF"></TD>
+  </TR>
+  <TR>
+    <TD CLASS="headtext" BGCOLOR="#226666">
+      <A HREF="http://validator.w3.org/check/referer">
+        <IMG BORDER="0" SRC="http://www.w3.org/Icons/valid-html401"
+         ALT="Valid HTML 4.01!" HEIGHT="31" WIDTH="88">
+      </A>
+      <A HREF="http://cr.yp.to/djbdns.html"><IMG BORDER="0" WIDTH="88"
+      HEIGHT="31" SRC="djbdns.jpg" ALT="Powered by djbdns!"></A>
+      <IMG BORDER="0" WIDTH="88" HEIGHT="30" SRC="binclogo.gif"
+      ALT="Powered by Binc IMAP">
+    </TD>
+  </TR>
+</TABLE>
+
+</DIV>
+</TD>
+</TR>
+</TABLE>
+<BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR>
+<BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR>
+
+</BODY>
+</HTML>

@@ -1,0 +1,203 @@
+This documentation is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of the
+License, or (at your option) any later version.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Street #330, Boston, MA 02111-1307, USA.
+
+=========================================================================
+
+Welcome to Binc IMAP! This is the documentation for v@VERSION@.
+
+Here is a quick guide on how to setup IMAP on your system.
+
+Note that this is not the full documentation for Binc IMAP. You will
+find more about the server by viewing the man pages and reading
+through the bundled documentation under /opt/bincimap/doc.
+
+You can also check out the project home page's FAQ and the Life With
+Binc IMAP community documentation site:
+
+http://www.lifewithbincimap.org/
+
++=======================================================================+
+|                                                                       |
+|   The following library is required for Binc IMAP to support SSL:     |
+|                                                                       |
+|                 OpenSSL  - http://www.openssl.org/                    |
+|                                                                       |
++=======================================================================+
+
+For instructions on compiling from the tarball, please scroll down.
+
+If you do not plan to modify the original source code, it will suffice
+to grab one of the precompiled binary RPM packages from:
+
+http://www.bincimap.org/dl/RPMS
+
+NOTE: These are RedHat/SuSe packages. There are packages available for
+Mandrake, Debian and FreeBSD among other distributions. Search for
+"Binc IMAP" or "bincimap" on the respective distributions' web sites
+to learn more.
+
+If you can't find a precompiled binary that matches your system, you
+can grab a source RPM from here:
+
+http://www.bincimap.org/dl/SRPMS
+
+To create RPM packages for your system, you can run the following
+command as root:
+
+rpmbuild --rebuild bincimap-a.b.c-d.src.rpm
+
+At the end of the input, you will see where your binary package has
+been generated. If the rebuild fails, the package is easy to
+build from the tarball.
+
+=========================================================================
+
+Here's how to set up the service when building from the tarball.  Note
+that if you experience any problems in this section, do not hesitate
+to post your problems to the Binc IMAP mailing list.
+
+----------------------
+1) Compile the service
+----------------------
+
+./configure
+make
+make install    # Note: Mac OS X users need to use "sudo make install"
+
+        Add --enable-static to ./configure to build a static binary
+        (a binary that does not depend on the shared libraries on
+        the machine it's built on).
+
+        If you want to place the binaries and configuration files in
+        a different place from what's default, use the --prefix and
+        --sysconfdir arguments to configure.
+
+        To set the location of the log directories (with multilog),
+        set --localstatedir.
+
+        If you want smaller binaries, run "make install-strip" instead
+        of "make install".
+
+        To create a self signed SSL certificate, run "make testcert". Read
+        more on SSL certificates in README.SSL.
+
+--------------------------------
+2) Apply necessary configuration
+--------------------------------
+
+        Edit the destination bincimap.conf file, which by default is
+        installed under /etc/opt/bincimap. Check each
+        individual setting.
+
+         * Note the location of your server's SSL PEM-encoded
+           certificate. If you do not have one, you can run "make testcert"
+           to create a test certificate. 
+         * Note the default path to users' mail depot, relative to the
+           users' home directories. If the depot directory is ~/Maildir,
+           set path = "Maildir". If the depot is the current directory,
+           set path = ".". Remember that if you're using
+           IMAPdir, the depot needs to have a mailbox called INBOX.
+         * Use the man pages bundled with the distribution, under
+           the man/ directory.
+
+        You can read more about this in the bundled FAQ under the
+        doc/ directory.
+
+        If using daemontools' supervise, tcpserver and multilog,
+        create the multilog directores.
+
+mkdir -p /var/opt/log/bincimap{,-ssl}
+chown nobody.nobody /var/opt/log/bincimap{,-ssl}
+
+        xinetd users will be more familiar with using syslog.
+
+----------------------------
+3) Install the service files
+----------------------------
+
+        With xinetd:
+
+        Edit /etc/opt/bincimap/xinetd/imap and
+        /etc/opt/bincimap/xinetd/imaps and check that the locations
+        of configuration files and binaries are correct.
+
+        Note the location of your checkpassword authenticator in
+        particular, and use the man pages to find what options you need
+        to pass.
+
+        You may also want to symlink them to /etc/xinetd.d instead
+        of copying the files.
+
+ln -s /etc/opt/bincimap/xinetd/imap /etc/xinetd.d/imap
+ln -s /etc/opt/bincimap/xinetd/imaps /etc/xinetd.d/imaps
+service xinetd restart
+
+        With daemontools' supervise:
+
+        Edit /etc/opt/bincimap/service/imap/run,
+        /etc/opt/bincimap/service/imap/log/run,
+        /etc/opt/bincimap/service/imaps/run and
+        /etc/opt/bincimap/service/imaps/log/run and
+        check that the locations are correct.
+        Note the location of your authenticator in particular.
+
+        Then copy or symlink the service files in place.
+
+ln -s /etc/opt/bincimap/service/imap /service/imap
+ln -s /etc/opt/bincimap/service/imaps /service/imaps
+
+        There are 'down' files in both service directories,
+        so you will have to run 'svc -u' on both services (and
+        log files) to get them running.
+
+----------------------------
+4) Securing your service
+----------------------------
+
+        - It's a good thing to not allow users to pass their passwords
+          over a plain text connection. Require that your users enable
+          SSL by setting this option in your Authentication section
+          in bincimap.conf:
+
+            allow plain auth in non ssl = "no"
+
+        - Binc IMAP allows users to retry a login if the password they
+          submit is wrong. To make it harder for malicious users to
+          brute force passwords, Binc IMAP allows you to make it sleep
+          for a certain number of seconds after a failed password. You
+          can set this to 0, for no penalty, but this is a recommended
+          value:
+
+            auth penalty = 4
+
+        - The bincimap-up stub channels input to and output from the
+          main IMAP server. It does this in what we call a "chroot
+          jail". Make sure you set the path to an empty directory on
+          your server, preferable one in which a certain unprivileged
+          user has no rights:
+
+            Security {
+                jail path = "/opt/bincimap/bin",
+                jail user = "nobody",
+                jail group = "nobody"
+            }
+
+Happy IMAPing! With these settings your copy of Binc IMAP should be
+operational.  For more information, please check out the man pages and
+FAQ.
+                                                   Andy :-)
+
+=========================================================================
+Tell us what you think about this server! Post any problems, remarks
+or comments to:
+
+The Binc IMAP mailing list <binc@bincimap.org>
+The Binc IMAP Developers' mailing list <binc-dev@bincimap.org>
+
+Author: Andreas Aardal Hanssen <andreas-binc@bincimap.org>

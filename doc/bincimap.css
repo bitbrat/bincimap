@@ -1,0 +1,8 @@
+a:link     { color: #fff; font-size: 12pt; font-family: Arial, Helvetica, Verdana; text-decoration: underline }
+a:active   { color: #fff; font-size: 12pt; font-family: Arial, Helvetica, Verdana; text-decoration: underline }
+a          { color: #fff; font-size: 12pt; font-family: Arial, Helvetica, Verdana; text-decoration: underline }
+a:vlink    { color: #fff; font-size: 12pt; font-family: Arial, Helvetica, Verdana; text-decoration: underline }
+body       { color: #fff; font-size: 12pt; font-family: Arial, Helvetica, Verdana }
+.bodytext  { color: #fff; font-size: 12pt; font-family: Arial, Helvetica, Verdana }
+.headtext  { color: #fff; font-size: 20pt; font-family: Arial, Helvetica, Verdana }
+

@@ -1,0 +1,210 @@
+dnl This program is free software; you can redistribute it and/or modify
+dnl it under the terms of the GNU General Public License as published by
+dnl the Free Software Foundation; either version 2 of the License, or
+dnl (at your option) any later version.
+
+dnl You should have received a copy of the GNU General Public License
+dnl along with this program; if not, write to the Free Software
+dnl Foundation, Inc., 59 Temple Street #330, Boston, MA 02111-1307,
+dnl USA.
+
+dnl Process this file with autoconf to produce a configure script.
+dnl AC_PREREQ(2.57)
+AC_INIT(bincimap, 1.2.6beta4, bincimap@andreas.hanssen.name)
+AC_CONFIG_SRCDIR([config.h.in])
+AM_CONFIG_HEADER([config.h])
+AM_INIT_AUTOMAKE
+
+dnl Checks for programs.
+AC_PROG_CXX
+AC_PROG_CC
+AC_PROG_INSTALL
+AC_PROG_MAKE_SET
+AC_PROG_AWK
+AM_PROG_LEX
+AC_PROG_LN_S
+AC_PROG_RANLIB
+AC_PROG_YACC
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_HEADER_DIRENT
+AC_HEADER_STDBOOL
+AC_HEADER_STDC
+AC_HEADER_SYS_WAIT
+AC_CHECK_HEADERS([fcntl.h stddef.h stdlib.h string.h unistd.h sys/time.h syslog.h utime.h wait.h])
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_TYPE_UID_T
+AC_C_INLINE
+AC_TYPE_MODE_T
+AC_TYPE_PID_T
+AC_TYPE_SIZE_T
+AC_STRUCT_TM
+
+dnl Checks for library functions.
+AC_FUNC_CHOWN
+AC_FUNC_CLOSEDIR_VOID
+AC_FUNC_FORK
+AC_FUNC_LSTAT
+AC_FUNC_MALLOC
+AC_FUNC_MKTIME
+AC_FUNC_REALLOC
+AC_FUNC_SELECT_ARGTYPES
+AC_TYPE_SIGNAL
+AC_FUNC_STAT
+AC_FUNC_STRFTIME
+AC_FUNC_STRTOD
+AC_FUNC_UTIME_NULL
+AC_FUNC_ERROR_AT_LINE
+AC_CHECK_FUNCS([alarm dup2 getcwd gethostname gettimeofday memset mkdir putenv regcomp rmdir select setenv strchr strdup strerror strtol utime])
+
+AC_PREFIX_DEFAULT(/opt/bincimap)
+
+dnl Add /usr/kerberos/include to include path if this path
+dnl exists.
+AC_MSG_CHECKING(wether to include /usr/kerberos/include)
+if [[ -e /usr/kerberos/include ]]; then
+  AC_MSG_RESULT([yes])
+  CXXFLAGS="-I/usr/kerberos/include $CXXFLAGS"
+else
+  AC_MSG_RESULT([not necessary])
+fi
+
+CXXFLAGS="$CXXFLAGS -Wall -fno-exceptions"
+
+prefix=$(eval echo $(eval echo ${prefix}))
+sysconfdir=$(eval echo $(eval echo ${sysconfdir}))
+localstatedir=$(eval echo $(eval echo ${localstatedir}))
+
+AC_MSG_CHECKING(--prefix)
+if [[ "x$prefix" = "xNONE" ]]; then
+   AC_MSG_RESULT([unset, defaulting to /opt/bincimap])
+   prefix=/opt/bincimap
+   AC_SUBST(prefix)
+else
+   AC_MSG_RESULT(using $prefix)
+fi
+
+AC_MSG_CHECKING(--sysconfdir)
+if [[ "x$sysconfdir" = "xNONE/etc" ]]; then
+   AC_MSG_RESULT([unset, defaulting to /etc/opt/bincimap])
+   sysconfdir=/etc/opt/bincimap
+   AC_SUBST(sysconfdir)
+else
+   AC_MSG_RESULT(using $sysconfdir)
+fi
+
+AC_MSG_CHECKING(--localstatedir)
+if [[ "x$localstatedir" = "xNONE/var" ]]; then
+   AC_MSG_RESULT([unset, defaulting to /var/opt])
+   localstatedir=/var/opt
+   AC_SUBST(localstatedir)
+else
+   AC_MSG_RESULT(using $localstatedir)
+fi
+
+AC_ARG_ENABLE(static,
+              AC_HELP_STRING([--enable-static], [Enable static compile]),
+              [STATIC="-static --all-static"], [STATIC=])
+AC_SUBST(STATIC)
+
+AC_ARG_WITH(optimization,
+            AC_HELP_STRING([--with-optimization], [Compile with -O2 (default)])
+AC_HELP_STRING([--without-optimization], [Compile with -O0]),
+            [ if [[ "x$withval" != "xno" ]]; then WITH_OPTIMIZATION=1; fi ],
+            WITH_OPTIMIZATION=1)
+
+AC_MSG_CHECKING(wether to compile with optimization)
+if [[ "x$WITH_OPTIMIZATION" = "x1" ]]; then
+  AC_MSG_RESULT(yes)
+  CXXFLAGS="$CXXFLAGS -O2"
+else
+  AC_MSG_RESULT(no)
+  CXXFLAGS="$CXXFLAGS -O0"
+fi
+
+AC_ARG_WITH(openssl-lib,
+	 AC_HELP_STRING([--with-openssl-lib], [Set path to OpenSSL libraries]),
+	 [ if [[ "x$withval" != "xno" -a "x$withval" != "xyes" ]]; then LDFLAGS="$LDFLAGS -L$withval"; fi ],)
+
+AC_ARG_WITH(openssl-include,
+	 AC_HELP_STRING([--with-openssl-include], [Set path to OpenSSL headers]),
+	 [ if [[ "x$withval" != "xno" -a "x$withval" != "xyes" ]]; then CXXFLAGS="$CXXFLAGS -I$withval"; fi ],)
+
+AC_ARG_WITH(ssl,
+            AC_HELP_STRING([--with-ssl], [Enable SSL support (default)])
+	    AC_HELP_STRING([--without-ssl], [Disable SSL support]),
+            [ if [[ "x$withval" != "xno" ]]; then WITH_SSL=1; fi ],
+            WITH_SSL=1)
+
+AC_MSG_CHECKING(for OpenSSL libraries)
+if [[ "$WITH_SSL" = "1" ]]; then
+  AC_DEFINE(WITH_SSL, 1, [Define to 1 if SSL support is included.])
+
+  export LDTMP=$LDFLAGS
+  for k in found /usr/lib /usr/local/lib /usr/local/ssl/lib /usr/local/openssl/lib /opt/ssl/lib /opt/openssl/lib; do
+      export LDFLAGS="-L$k $LDTMP -lssl -lcrypto"
+      AC_TRY_COMPILE([#include <openssl/ssl.h>], [SSL_write(0, 0, 0);], LIBSSL="-L$k -lssl -lcrypto"; AC_MSG_RESULT($k), [])
+      if [[ "x$LIBSSL" != "x" ]]; then break; fi
+  done
+
+  if [[ "x$LIBSSL" = "x" ]]; then
+      AC_MSG_RESULT(not found)
+      AC_MSG_ERROR([Unable to find the ssl library which is part of OpenSSL. You want want to look up the FAQ to learn more about this requirement and how to deal with it. Or run configure with --without-ssl.])
+  fi
+
+  AC_LANG_CPLUSPLUS
+  AC_MSG_CHECKING(wether OpenSSL headers are included properly)
+  AC_TRY_COMPILE([#include <openssl/ssl.h>], [], AC_MSG_RESULT([yes]), AC_MSG_ERROR([Unable to include header files for OpenSSL. Check config.log to see what exactly went wrong. With some platforms you need to explicitly add paths to certain header files in CXXFLAGS. For example ./configure CXXFLAGS="$CXXFLAGS -I /usr/kerberos/include".]))
+  AC_LANG_C
+else
+  AC_MSG_RESULT(no)
+fi
+
+AC_CHECK_LIB(dl, dlopen, LIBDL=-ldl, LIBDL=)
+AC_SUBST(LIBDL)
+AC_SUBST(LIBSSL)
+
+dnl Checks
+AC_LANG_CPLUSPLUS
+AC_MSG_CHECKING(whether to include <sstream> or <strstream>)
+AC_TRY_COMPILE([#include <sstream>], [], AC_MSG_RESULT([<sstream>]); AC_DEFINE(HAVE_SSTREAM,, [support for sstream]), AC_MSG_RESULT([<strstream>]))
+
+AC_MSG_CHECKING(whether to include <ostream> or <ostream.h>)
+AC_TRY_COMPILE([#include <ostream>], [], AC_MSG_RESULT([<ostream>]); AC_DEFINE(HAVE_OSTREAM,, [support for ostream]), AC_MSG_RESULT([<ostream.h>]))
+
+AC_MSG_CHECKING(whether O_LARGEFILE is defined)
+AC_TRY_COMPILE([  #include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+int i = O_LARGEFILE;], [], AC_MSG_RESULT([yes]); AC_DEFINE(HAVE_OLARGEFILE,, [support for O_LARGEFILE]), AC_MSG_RESULT([no]))
+
+AC_LANG_C
+
+AH_TOP(#ifndef config_h_included
+#define config_h_included
+)
+AH_BOTTOM(#endif
+)
+
+AC_OUTPUT([
+                 Makefile
+		 conf/Makefile
+		 conf/xinetd-bincimap
+		 conf/bincimap.conf
+		 conf/xinetd-bincimaps
+		 man/Makefile
+		 doc/Makefile
+		 doc/manual/Makefile
+		 contrib/Makefile
+		 contrib/authenticators/Makefile
+		 service/log/Makefile
+		 service/Makefile
+		 service/run
+		 service/log/run
+		 service/run-ssl
+		 service/log/run-ssl
+		 src/Makefile
+		 bincimap.spec
+		 README])

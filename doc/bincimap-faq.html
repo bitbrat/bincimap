@@ -1,0 +1,926 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML>
+
+<HEAD>
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+  <META HTTP-EQUIV="Content-Language" CONTENT="en">
+
+  <TITLE>Binc IMAP - FAQ</TITLE>
+  <META NAME="revisit-after" CONTENT="14 days">
+  <META NAME="keywords" CONTENT="Binc IMAP FAQ checkpassword daemontools tcpserver xinetd Maildir qmail">
+  <META NAME="description" CONTENT="Andreas Aardal Hanssen">
+  <META NAME="copyright" CONTENT="Copyright Andreas Aardal Hanssen 2002, 2003">
+  <META NAME="distribution" CONTENT="global">
+  <META NAME="author" CONTENT="Andreas Aardal Hanssen">
+  <LINK REL="stylesheet" HREF="bincimap.css" TYPE="text/css">
+  <LINK REL="icon" HREF="/favicon.ico" TYPE="image/ico">
+  <LINK REL="shortcut icon" HREF="/favicon.ico">
+
+</HEAD>
+
+<BODY BGCOLOR="#000000">
+
+<TABLE WIDTH="95%" ALIGN="CENTER" CELLSPACING="0" CELLPADDING="4">
+<TR>
+<TD BGCOLOR="#004444">
+
+<TABLE WIDTH="99%" ALIGN="CENTER" CELLSPACING="0" CELLPADDING="4">
+  <TR>
+    <TD CLASS="headtext" BGCOLOR="#226666" ALIGN="LEFT">
+      <TABLE>
+        <TR>
+          <TD ALIGN="center" VALIGN="middle"><IMG ALT="Binc IMAP logo" SRC="b-button64.png" BORDER="0"></TD>
+          <TD ALIGN="center" VALIGN="middle">Binc IMAP - FAQ</TD>
+        </TR>
+      </TABLE>
+    </TD>
+    <TD CLASS="bodytext" BGCOLOR="#226666" ALIGN="RIGHT">
+        <A HREF="http://www.gnu.org/licenses/gpl.html">GNU General Public License</A><BR>
+        Andreas Aardal Hanssen &lt;andreas@hanssen.name&gt;
+    </TD>
+  </TR>
+  <TR>
+    <TD CLASS="bodytext" BGCOLOR="#FFFFFF" COLSPAN="2"></TD>
+  </TR>
+</TABLE>
+
+<DIV CLASS="bodytext">
+
+<UL>
+  <LI>General questions
+    <BLOCKQUOTE>
+      <P><A HREF="#q1">Q: Why did you start writing Binc IMAP?</A></P>
+      <P><A HREF="#q2">Q: What is "Binc"?</A></P>
+    </BLOCKQUOTE>
+  </LI>
+  <LI>About Binc IMAP
+    <BLOCKQUOTE>
+      <P><A HREF="#q3">Q: What are the advantages of Binc IMAP?</A></P>
+      <P><A HREF="#q4">Q: So Binc IMAP doesn't focus on security?</A></P>
+      <P><A HREF="#q5">Q: Is Binc IMAP <I>fast</I>?</A></P>
+      <P><A HREF="#q6">Q: Is Binc IMAP a stable, secure server?</A></P>
+    </BLOCKQUOTE>
+  </LI>
+  <LI>Configuration
+    <BLOCKQUOTE>
+      <P><A HREF="#q7">Q: Which configuration files are used by Binc IMAP?</A></P>
+      <P><A HREF="#q12">Q: How can I tell Binc IMAP where my mailboxes/folders are?</A></P>
+      <P><A HREF="#q13">Q: How can I get SSL to work?</A></P>
+    </BLOCKQUOTE>
+  </LI>
+  <LI>Usage
+    <BLOCKQUOTE>
+      <P><A HREF="#q14">Q: How do I find my folders in Binc IMAP?</A></P>
+    </BLOCKQUOTE>
+  </LI>
+  <LI>Authentication
+    <BLOCKQUOTE>
+      <P><A HREF="#q8">Q: How does Binc IMAP authentication work?</A></P>
+    </BLOCKQUOTE>
+  </LI>
+  <LI>Compiling
+    <BLOCKQUOTE>
+      <P><A HREF="#q15">Q: How do I fix this: "Unable to find required function getopt_long"?</A></P>
+      <P><A HREF="#q16">Q: How do I fix this: "Unable to find the crypto library which is part of OpenSSL"?</A></P>
+      <P><A HREF="#q17">Q: How do I fix this: "Unable to find the ssl library which is part of OpenSSL"?</A></P>
+    </BLOCKQUOTE>
+  </LI>
+  <LI>Installing
+    <BLOCKQUOTE>
+      <P><A HREF="#q10">Q: How do I install Binc IMAP?</A></P>
+      <P><A HREF="#q11">Q: Why does Binc IMAP (RPM) install under /opt?</A></P>
+    </BLOCKQUOTE>
+  </LI>
+</UL>
+
+<HR>
+
+<A NAME="q1">
+<B><U>Q: Why did you start writing Binc IMAP?</U></B>
+</A>
+
+<BLOCKQUOTE>
+<P>First of all, I work a lot with qmail servers, and there haven't
+really been many Maildir capable IMAP4rev1 servers around. I used
+Courier-IMAP for years, but after loads of abuse from the Courier
+community and its author, I found that earth had room for one more
+IMAP4rev1 server.</P>
+
+<P>Enjoying the simplicity of qmail-pop3d, I decided to create an IMAP
+server that was equally simple to install and use, and that could work
+side-by-side with qmail-pop3d to provide IMAP service to qmail
+users.</P>
+
+<P>I had already written an IMAP server for proxying POP3-accounts at
+work, and I had so many good experiences from that project that I
+beleived that I could really write a great IMAP server.</P>
+
+<P>Well, it's up to you to determine how great it is, but I swear it has
+it's advantages over the existing Maildir capable IMAP servers out
+there.</P>
+</BLOCKQUOTE>
+
+<HR>
+
+<A NAME="q2">
+<B><U>Q: What is "Binc"?</U></B>
+</A>
+
+<BLOCKQUOTE>
+
+<P>This should be quite obvious: Binc Is Not Courier-IMAP :-).</P>
+
+</BLOCKQUOTE>
+
+<HR>
+
+<A NAME="q3">
+<B><U>Q: What are the advantages of Binc IMAP?</U></B>
+</A>
+
+<BLOCKQUOTE>
+
+<P>Binc IMAP is a <I>light weight alternative</I> to existing IMAP
+servers. It's easier to install, easier to maintain, and it's easy to
+integrate into existing (perhaps legacy) authentication
+environments.</P>
+
+<P>Binc IMAP is small and simple. The total number of lines of source
+code is much smaller in Binc than in the other servers. Version
+1.0.24-1 of Binc IMAP has about 18000 lines of code. There are only
+17000 lines of hand written code, including comments. Few lines in
+itself does <I>not</I> imply that the code is better, but it's
+certainly much easier to maintain.</P>
+
+<P>It is also written in C++, using standard C++ data components. If
+this server crashes, it'll most likely abort, and not suffer a
+segmentation fault, which is the most common reason for exploits.</P>
+
+<P>Binc IMAP uses an object oriented design all the way. A modular,
+simple design with few lines of code means that it's easier to uncover
+bugs, and it's easier to fix them without disturbing the rest of the
+source code.</P>
+
+</BLOCKQUOTE>
+
+<HR>
+
+<A NAME="q4">
+<B><U>Q: So Binc IMAP doesn't focus on security?</U></B>
+</A>
+
+<UL>
+  <LI>Security comes naturally with a service with a clean, correct
+  design and no bugs</LI>
+
+  <LI>Security can not be claimed. To prove that a server is not
+  secure, one must simply find a way to exploit it. <I>Claiming</I>
+  that a server is secure is like claiming that nobody can find a way
+  to break it.</LI>
+
+  <LI>The only true argument is to <I>prove</I> that it's secure. And
+  that's almost impossible.</LI>
+
+  <LI>Binc IMAP focuses on creating a service with a clean, correct
+  design with no bugs. Time and experience will tell wether it's a
+  secure server or not.</LI>
+</UL>
+
+<HR>
+
+<A NAME="q5">
+<B><U>Q: Is Binc IMAP <I>fast</I>?</U></B>
+</A>
+
+<P>Binc IMAP focuses its optimizations on the type of activity that
+dominates the lifetime of an IMAP connection, which is idle time.</P>
+
+   <UL>
+     <LI>Pending updates: When a client issues NOOP, CHECK or similar,
+     the server must give the latest changes to the depository. If no
+     changes have been made, this operation will with Binc IMAP
+     consist of only two stat-calls, which is extremely fast.</LI>
+
+     <LI>FETCH: Multiple subsequent operations on the same message
+     will never cause the message to be parsed more than twice - once
+     for header-only operations and once for full message info.</LI>
+
+     <LI>STATUS: The status command is typically used to check for
+     new messages in all subscribed mailboxes. If no changes have been
+     made to a mailbox, the status command in Binc IMAP consists of
+     only two stat calls, which is extremely fast.</LI>
+
+     <LI>SEARCH: The search keys are weighted, and the search query is
+     sorted with lightest-search first. This prevents unnecessary
+     processing of slow search keys if the light search keys do not
+     match the message set.</LI>
+   </UL>
+
+<P>Some activity is not optimal in Binc IMAP, and searching for random
+text in particular is no faster than a sequential search using
+standard UNIX tools such as <I>grep</I>. Searching for text in a large
+mailbox is quite rare, however, compared to the random activity of
+close-to-idle clients.</P>
+
+<HR>
+
+<A NAME="q6">
+<B><U>Q: Is Binc IMAP a stable, secure server?</U></B>
+</A>
+
+<BLOCKQUOTE>
+<P>It's hard to write bug free programs, especially with a complex
+protocol like IMAP4rev1. Any attempts to verify code usually comes
+down to the limitations in the author's experience with
+verification. Or as
+<A HREF="http://www-cs-faculty.stanford.edu/~knuth/">Donald Knuth</A>
+said (my favorite quote):</P>
+
+<P><I>"Beware of bugs in the above code; I have only proved it correct,
+ not tried it."</I></P>
+
+<P>Knuth teaches that it can be easy to prove that your code is
+correct, but who's going to prove that your <I>proof</I> is correct?
+Proving your proof might turn out to be close to impossle. What you
+can have, is conventions and principles that prevent bugs from showing
+up in your programs. Here are mine:</P>
+
+<UL>
+  <LI>Don't reinvent the wheel. Unless absolutely necessary, write
+  code that doesn't exist already.</LI>
+  <LI>Spend your time on making it work as simple as possible,
+  then start making optimizations.</LI>
+  <LI>Don't let optimization obfuscate your source code.</LI>
+  <LI>Find a better algorithm, or if you can't get the speed that you
+  want, change to a more efficient programming language.</LI>
+  <LI>Handle all error conditions.</LI>
+  <LI>Avoid buffers altogether.</LI>
+  <LI>Don't hand write parsers unless strictly necessary - they are
+  hard to get right.</LI>
+  <LI>For G's sake, be compliant! If the standard has flaws, then
+  <I>help fix the flaws</I> - don't break the standard.</LI>
+</UL>
+
+<P>Now I don't pay $2.56^n where n equals the total number of
+bugs discovered in Binc IMAP, but I will certainly give you
+many pats on the back if I get the chance. :-)</P>
+
+<P>I could go on and on, but the point is that I have tried my best to
+perform all the expected tasks in the most logical and obvious way
+possible, using all my C++ security experience to aid me. But at the
+time of writing, the server is young, the community small, and we are
+only in Beta.  So time will have to tell how stable and secure we
+are.</P>
+
+</BLOCKQUOTE>
+
+<HR>
+
+<A NAME="q7">
+<B><U>Q: Which configuration files are used by Binc IMAP?</U></B>
+</A>
+
+<BLOCKQUOTE>
+<UL>
+  <LI>/etc/opt/bincimap/supervise/imap/run</LI>
+  <LI>/etc/opt/bincimap/supervise/imaps/run</LI>  
+  <LI>/etc/opt/bincimap/xinetd/imap</LI>
+  <LI>/etc/opt/bincimap/xinetd/imaps</LI>    
+</UL>
+
+<P>These files are for administrators. You can set up Binc IMAP's
+authentication method here.</P>
+
+<UL>
+<LI>/etc/opt/bincimap/bincimap.conf</LI>
+</UL>
+
+<P>This first file is for setting global administrator settings, such
+as paths to the host's SSL certificate, timeouts for idle clients and
+so on. It need not be readable for anyone but root.</P>
+
+<UL>
+<LI>$HOME/.bincimap</LI>
+</UL>
+
+<P>This file is for individual settings, such as what the exact path
+is to this user's depository, which default Mailbox type to use and
+which type of depository the user uses.</P>
+
+</BLOCKQUOTE>
+
+<HR>
+
+<A NAME="q12">
+<B><U>Q: How can I tell Binc IMAP where my mailboxes/folders are?</U></B>
+</A>
+
+<BLOCKQUOTE>
+
+<P>The configuration file has a section called <B>Mailbox</B>. You can
+set the <B>path</B> to your users' mail depository there, relative to
+the users' home areas.</P>
+
+<P>If your depository is not is users' homeareas, for instance if your
+depository has a <B>/var/mail/user/</B> structure, you can safely set
+<B>path</B> to <B>"."</B> or <B>""</B>. Your authenticator must then
+change to the full path of the depository, <B>/var/mail/user/</B>,
+before invoking bincimapd.</P>
+
+<P>For a <B>Maildir++</B> depository under standard home areas, with
+the mailbox path set to "Maildir" in bincimap.conf, your structure
+would typically look something like this:</P>
+
+<TABLE ALIGN="center" CELLSPACING="5" CELLPADDING="5">
+  <TR>
+    <TH BGCOLOR="#555555">File system
+    </TH>
+    <TH BGCOLOR="#555555">IMAP
+    </TH>
+    <TH BGCOLOR="#555555">Description
+    </TH>
+  </TR>
+  <TR>
+    <TD BGCOLOR="#555555">
+      <PRE>
+~/Maildir/
+~/Maildir/.Sent/
+      </PRE>
+    </TD>
+    <TD BGCOLOR="#555555">
+      <PRE>
+"INBOX"
+"INBOX/Sent"
+      </PRE>
+    </TD>
+    <TD BGCOLOR="#555555">
+      <PRE>
+The main mailbox, the INBOX.
+A user created mailbox.
+      </PRE>
+    </TD>
+  </TR>
+</TABLE>
+
+<P>If you use IMAPdir (setting depot="IMAPdir" and for instance
+path="IMAPdir"), the structure would be slightly different:</P>
+
+<TABLE ALIGN="center" CELLSPACING="5" CELLPADDING="5">
+  <TR>
+    <TH BGCOLOR="#555555">File system
+    </TH>
+    <TH BGCOLOR="#555555">IMAP
+    </TH>
+    <TH BGCOLOR="#555555">Description
+    </TH>
+  </TR>
+  <TR>
+    <TD BGCOLOR="#555555">
+      <PRE>
+~/IMAPdir/INBOX -> ../Maildir
+~/IMAPdir/Sent/
+~/IMAPdir/Sent.2003/
+~/Maildir/
+      </PRE>
+    </TD>
+    <TD BGCOLOR="#555555">
+      <PRE>
+"INBOX"
+"Sent"
+"Sent/2003"
+&lt;zip&gt;
+      </PRE>
+    </TD>
+    <TD BGCOLOR="#555555">
+      <PRE>
+The main mailbox symlink, the INBOX.
+A user created mailbox.
+A sublevel user created mailbox.
+Invisible.
+      </PRE>
+    </TD>
+  </TR>
+</TABLE>
+
+<P>With no seperate directory for the mail depository, your structure
+would be like this with IMAPdir, and similar with Maildir++ <I>(the
+prefix folder is simply dropped, and INBOX itself is a Maildir, note
+that the MTA must be instructed to deliver to INBOX and not
+Maildir)</I>:</P>
+
+<TABLE ALIGN="center" CELLSPACING="5" CELLPADDING="5">
+  <TR>
+    <TH BGCOLOR="#555555">File system
+    </TH>
+    <TH BGCOLOR="#555555">IMAP
+    </TH>
+    <TH BGCOLOR="#555555">Description
+    </TH>
+  </TR>
+  <TR>
+    <TD BGCOLOR="#555555">
+      <PRE>
+~/INBOX
+~/Sent/
+~/Sent.2003/
+      </PRE>
+    </TD>
+    <TD BGCOLOR="#555555">
+      <PRE>
+"INBOX"
+"Sent"
+"Sent/2003"
+      </PRE>
+    </TD>
+    <TD BGCOLOR="#555555">
+      <PRE>
+The main mailbox, the INBOX, a Maildir.
+A user created mailbox.
+A sublevel user created mailbox.
+      </PRE>
+    </TD>
+  </TR>
+</TABLE>
+
+</BLOCKQUOTE>
+
+<HR>
+
+<A NAME="q13">
+<B><U>Q: How can I get SSL to work?</U></B>
+</A>
+
+<BLOCKQUOTE>
+
+<P>SSL in Binc IMAP is quite simple to set up. First you need a PEM
+encoded certificate file. In some distributions, you can generate this
+file by changing to /usr/share/ssl/certs and running "make". A script
+will give you the option to build a PEM file.</P>
+
+<P>When you have a PEM file, edit <B>bincimap.conf</B> in the SSL
+section . You need to add an item called <B>pem file</B> and set it to
+point to your PEM certificate. The path name must be absolute. For
+example:</P>
+
+<PRE>
+  SSL {
+    pem file = "/usr/share/ssl/certs/mypemfile.pem",
+    ca file = "",
+    cipher list = "!ADH:RC4+RSA:HIGH:MEDIUM:LOW:EXP:+SSLv2:+EXP",
+    verify peer = "no"
+  }
+</PRE>
+
+<P>The item <B>ca file</B> in <B>bincimap.conf</B> tells Binc IMAP
+which file on your system contains a bundle of <B>certificate
+authorities</B>.</P>
+
+<P>Next comes the item called <B>cipher list</B>. It tells Binc IMAP
+about which ciphers you want your server to support. This depends on
+what version of OpenSSL you're running.</P>
+
+<P>Last comes an option called <B>verify peer</B>. This tells Binc
+IMAP wether to attempt to verify the client's identity.</P>
+
+<P>Visit <A
+HREF="http://httpd.apache.org/docs-2.0/ssl/ssl_intro.html">this link
+at the Apache.org website</A> to read more about SSL and TLS
+principles.</P>
+
+</BLOCKQUOTE>
+
+<HR>
+
+<A NAME="q14">
+<B><U>Q: How do I find my folders in Binc IMAP?</U></B>
+</A>
+
+<BLOCKQUOTE>
+
+<P>Binc IMAP can be configured to use two types of depositories:
+Maildir++ and IMAPdir.</P>
+
+<P>Using Maildir++, all folders in Binc IMAP must be subfolders of
+INBOX. This is the default setting.</P>
+
+<P>This means that if you want to create a folder called <B>work</B>,
+you have to create <B>INBOX.work</B> or <B>INBOX/work</B>.</P>
+
+<P>For some graphical IMAP clients like <B>Outlook</B> (look out!) or
+<B>Mozilla Mail</B>, this means you need to <I>right click</I> on
+<B>INBOX</B> and select "Create subfolder".</P>
+
+<P>Using IMAPdir, folders can be created in any levels. See also <A
+HREF="#q12">this question</A>.</P>
+
+</BLOCKQUOTE>
+
+<HR>
+
+<A NAME="q8">
+<B><U>Q: How does Binc IMAP authentication work?</U></B>
+</A>
+
+<BLOCKQUOTE>
+<P>Binc IMAP is spawned by xinetd, tcpserver or any other TCP wrapper
+running as root.</P>
+
+<P>It immediately goes into pre-authentication mode, where it expects
+the client to enter STARTTLS if the client is not already running an
+SSL connection. When in TLS/SSL mode, it will accept clear text
+authentication.</P>
+
+<P>Binc IMAP uses the same authentication method as
+<U>qmail-pop3d</U>, checkpassword. The pre-authentication stub invokes
+the checkpassword compatible authenticator, which if the password is
+correct in turn invokes the main Binc IMAP daemon.</P>
+
+<P>The <A HREF="http://cr.yp.to/checkpwd.html">checkpassword documentation</A> is
+required reading for everyone running Binc IMAP.</P>
+
+</BLOCKQUOTE>
+
+<HR>
+
+<A NAME="q15">
+<B><U>Q: How do I fix this: "Unable to find required function getopt_long"?</U></B>
+</A>
+
+<BLOCKQUOTE>
+
+<P>The <U>getopt_long</U> function is a GNU extension to the POSIX.2 <U>getopt</U>
+function. It allows long arguments such as <B>--enable-ssl</B>.</P>
+
+<P>Unfortunately, this function is not defined on all
+platforms. Specifically, it is known to not exist on FreeBSD.</P>
+
+<P>For FreeBSD users, install <U>gnugetopt</U> from ports. Otherwise,
+post this problem with as much relevant info as you can provide, to
+the mailing list.</P>
+
+</BLOCKQUOTE>
+
+<HR>
+
+<A NAME="q16">
+<B><U>Q: How do I fix this: "Unable to find the crypto library which is part of OpenSSL"?</U></B>
+</A>
+
+<BLOCKQUOTE>
+
+<P>The <U>crypto</U> library is a part of <A HREF="http://www.openssl.org">OpenSSL</A>. This
+library is required for Binc IMAP to compile.</P>
+
+<P>If you can not get Binc IMAP to compile with OpenSSL, there should
+be a <A HREF="dl/RPMS">static RPM package</A> available for download.</P>
+
+</BLOCKQUOTE>
+
+<HR>
+
+<A NAME="q17">
+<B><U>Q: How do I fix this: "Unable to find the ssl library which is part of OpenSSL"?</U></B>
+</A>
+
+<BLOCKQUOTE>
+
+<P>The <U>crypto</U> library is a part of <A HREF="http://www.openssl.org">OpenSSL</A>. This
+library is required for Binc IMAP to compile.</P>
+
+<P>If you can not get Binc IMAP to compile with OpenSSL, there should
+be a <A HREF="dl/RPMS">static RPM package</A> available for download.</P>
+
+</BLOCKQUOTE>
+
+<HR>
+
+<A NAME="q10">
+<B><U>Q: How do I install Binc IMAP?</U></B>
+</A>
+
+<BLOCKQUOTE>
+
+<P>The <I>easiest</I> way to install Binc IMAP on your server is to
+follow these instructions:</P>
+
+<UL>
+  <LI>Download the RPM from <A HREF="dl/RPMS">http://www.bincimap.andreas.hanssen.name/dl/RPMS</A></LI>
+  <LI>Install the RPM</LI>
+  <LI>Copy, edit and perhaps symlink the configuration files:
+    <UL>
+    <LI>with daemontools:
+      <UL>
+        <LI>ln -s /etc/opt/bincimap/supervise/imap /service/imap</LI>
+        <LI>ln -s /etc/opt/bincimap/supervise/imaps /service/imaps</LI>	
+      </UL>
+    </LI>
+    <LI>with xinetd:
+      <UL>
+        <LI>ln -s /etc/opt/bincimap/xinetd/imap /etc/xinetd.d/imap</LI>
+        <LI>ln -s /etc/opt/bincimap/xinetd/imaps /etc/xinetd.d/imaps</LI>
+	<LI>service xinetd restart</LI>
+      </UL>
+    </LI>
+    </UL>
+  </LI>
+  <LI>Check that the service is up by connecting using a standard IMAP client</LI>
+</UL>
+
+<P>If you want to build Binc IMAP from source, there's a <B>README</B>
+file that gives you the instructions step by step, inside the
+tarball. You can also get some clues by inspecting the bundled
+<B>bincimap-spec</B> file's <B>install</B> section.</P>
+
+</BLOCKQUOTE>
+
+<HR>
+
+<A NAME="q11">
+<B><U>Q: Why does Binc IMAP (RPM) install under /opt?</U></B>
+</A>
+
+<BLOCKQUOTE>
+
+<P>The reason for this is that I have tried my best to follow the <A
+HREF="http://www.pathname.com/fhs/">File System Hierarchy
+Standard</A>.</P>
+
+<P>Binaries go under <B>/opt/bincimap/bin</B></P>
+
+<P>Host specific configuration goes under <B>/etc/opt/bincimap</B></P>
+
+<P>If you want your files elsewhere, there's always the option to build
+the project from source. :-)</P>
+
+</BLOCKQUOTE>
+
+<HR>
+
+<TABLE WIDTH="99%" ALIGN="CENTER" CELLSPACING="0" CELLPADDING="4">
+  <TR>
+    <TD CLASS="bodytext" BGCOLOR="#FFFFFF"></TD>
+  </TR>
+  <TR>
+    <TD CLASS="headtext" BGCOLOR="#226666">
+      <A HREF="http://validator.w3.org/check/referer">
+        <IMG BORDER="0" SRC="http://www.w3.org/Icons/valid-html401"
+         ALT="Valid HTML 4.01!" HEIGHT="31" WIDTH="88">
+      </A>
+      <A HREF="http://cr.yp.to/djbdns.html"><IMG BORDER="0" WIDTH="88"
+      HEIGHT="31" SRC="djbdns.jpg" ALT="Powered by djbdns!"></A>
+      <IMG BORDER="0" WIDTH="88" HEIGHT="30" SRC="binclogo.gif"
+      ALT="Powered by Binc IMAP">
+    </TD>
+  </TR>
+</TABLE>
+
+</DIV>
+</TD>
+</TR>
+</TABLE>
+<BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR>
+<BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR>
+
+</BODY>
+</HTML>
++FLAGS \Flagged
+* FETCH (FLAGS (\Seen \Flagged))
+8 OK STORE completed
+      </PRE>
+    </LI>
+  </UL>
+</P>
+
+<P>If all these tests work fine, try connecting with an IMAP client
+such as Mozilla, Outlook, Eudora, Netscape, Mutt or Pine.</P>
+
+</BLOCKQUOTE>
+
+<HR>
+
+<A NAME="q14">
+<B><U>Q: How do I find my folders in Binc IMAP?</U></B>
+</A>
+
+<BLOCKQUOTE>
+
+<P>Binc IMAP can be configured to use two types of depositories:
+Maildir++ and IMAPdir.</P>
+
+<P>Using Maildir++, all folders in Binc IMAP must be subfolders of
+INBOX. This is the default setting.</P>
+
+<P>This means that if you want to create a folder called <B>work</B>,
+you have to create <B>INBOX.work</B> or <B>INBOX/work</B>.</P>
+
+<P>For some graphical IMAP clients like <B>Outlook</B> (look out!) or
+<B>Mozilla Mail</B>, this means you need to <I>right click</I> on
+<B>INBOX</B> and select "Create subfolder".</P>
+
+<P>Using IMAPdir, folders can be created in any levels. See also <A
+HREF="#q12">this question</A>.</P>
+
+</BLOCKQUOTE>
+
+<HR>
+
+<A NAME="q8">
+<B><U>Q: How does Binc IMAP authentication work?</U></B>
+</A>
+
+<BLOCKQUOTE>
+<P>Binc IMAP is spawned by xinetd, tcpserver or any other TCP wrapper
+running as root.</P>
+
+<P>It immediately goes into pre-authentication mode, where it expects
+the client to enter STARTTLS if the client is not already running an
+SSL connection. When in TLS/SSL mode, it will accept clear text
+authentication.</P>
+
+<P>Binc IMAP uses the same authentication method as
+<U>qmail-pop3d</U>, checkpassword. The pre-authentication stub invokes
+the checkpassword compatible authenticator, which if the password is
+correct in turn invokes the main Binc IMAP daemon.</P>
+
+<P>The <A HREF="http://cr.yp.to/checkpwd.html">checkpassword documentation</A> is
+required reading for everyone running Binc IMAP.</P>
+
+</BLOCKQUOTE>
+
+<HR>
+
+<A NAME="q19">
+<B><U>Q: What does this mean: "Server broke for <userid>, /bin/checkpassword returned 111 (internal error)"?</U></B>
+</A>
+
+<BLOCKQUOTE>
+
+<P>This log line is printed by <U>bincimap-up</U>, and reflects how
+confusing checkpassword can be at times. Most often, though, the
+problem is easy to solve.</P>
+
+<P>Log in as the user who tried to log in. If you are using a virtual
+mail account system like vpopmail, become the user that mail accounts
+are stored as.</P>
+
+<P>Try running the bincimapd daemon manually. If you can execute the
+binary, there will be no output and the server will simply exit. Most
+often, however, you will get an error such as "command not found" or
+"permission denied". This should explain quite easily what the problem
+is. Note that the bincimapd binary must have read and execute
+permissions for all users (755).</P>
+
+<P>If this didn't solve your problem, please post to the mailing list
+a stack trace. To create a stacktrace, attach to tcpserver/xinetd
+using "strace -s 1024 -f -p <pid> 2>&1 >dump". Log in to reproduce the
+error.  Then interrupt the strace program and email the "dump" file to
+the mailing list. <B>Note:</B> It is likely that the dump file
+contains passwords in plain text.</P>
+
+</BLOCKQUOTE>
+
+<HR>
+
+<A NAME="q15">
+<B><U>Q: How do I fix this: "Unable to find required function getopt_long"?</U></B>
+</A>
+
+<BLOCKQUOTE>
+
+<P>Note: This only applies to versions 1.1.6 or older.</P>
+
+<P>The <U>getopt_long</U> function is a GNU extension to the POSIX.2 <U>getopt</U>
+function. It allows long arguments such as <B>--enable-ssl</B>.</P>
+
+<P>Unfortunately, this function is not defined on all
+platforms. Specifically, it is known to not exist on FreeBSD.</P>
+
+<P>For FreeBSD users, install <U>gnugetopt</U> from ports. Otherwise,
+post this problem with as much relevant info as you can provide, to
+the mailing list.</P>
+
+</BLOCKQUOTE>
+
+<HR>
+
+<A NAME="q16">
+<B><U>Q: How do I fix this: "Unable to find the crypto library which is part of OpenSSL"?</U></B>
+</A>
+
+<BLOCKQUOTE>
+
+<P>The <U>crypto</U> library is a part of <A HREF="http://www.openssl.org">OpenSSL</A>. This
+library is required for Binc IMAP to compile.</P>
+
+<P>If you can not get Binc IMAP to compile with OpenSSL, there should
+be a <A HREF="dl/RPMS">static RPM package</A> available for download.</P>
+
+</BLOCKQUOTE>
+
+<HR>
+
+<A NAME="q17">
+<B><U>Q: How do I fix this: "Unable to find the ssl library which is part of OpenSSL"?</U></B>
+</A>
+
+<BLOCKQUOTE>
+
+<P>The <U>crypto</U> library is a part of <A HREF="http://www.openssl.org">OpenSSL</A>. This
+library is required for Binc IMAP to compile.</P>
+
+<P>If you can not get Binc IMAP to compile with OpenSSL, there should
+be a <A HREF="dl/RPMS">static RPM package</A> available for download.</P>
+
+</BLOCKQUOTE>
+
+<HR>
+
+<A NAME="q10">
+<B><U>Q: How do I install Binc IMAP?</U></B>
+</A>
+
+<BLOCKQUOTE>
+
+<P>The <I>easiest</I> way to install Binc IMAP on your server is to
+follow these instructions:</P>
+
+<UL>
+  <LI>Download the RPM from <A HREF="dl/RPMS">http://www.bincimap.andreas.hanssen.name/dl/RPMS</A></LI>
+  <LI>Install the RPM</LI>
+  <LI>Copy, edit and perhaps symlink the configuration files:
+    <UL>
+    <LI>with daemontools:
+      <UL>
+        <LI>ln -s /etc/opt/bincimap/supervise/imap /service/imap</LI>
+        <LI>ln -s /etc/opt/bincimap/supervise/imaps /service/imaps</LI>	
+      </UL>
+    </LI>
+    <LI>with xinetd:
+      <UL>
+        <LI>ln -s /etc/opt/bincimap/xinetd/imap /etc/xinetd.d/imap</LI>
+        <LI>ln -s /etc/opt/bincimap/xinetd/imaps /etc/xinetd.d/imaps</LI>
+	<LI>service xinetd restart</LI>
+      </UL>
+    </LI>
+    </UL>
+  </LI>
+  <LI>Check that the service is up by connecting using a standard IMAP client</LI>
+</UL>
+
+<P>If you want to build Binc IMAP from source, there's a <B>README</B>
+file that gives you the instructions step by step, inside the
+tarball. You can also get some clues by inspecting the bundled
+<B>bincimap-spec</B> file's <B>install</B> section.</P>
+
+</BLOCKQUOTE>
+
+<HR>
+
+<A NAME="q11">
+<B><U>Q: Why does Binc IMAP (RPM) install under /opt?</U></B>
+</A>
+
+<BLOCKQUOTE>
+
+<P>The reason for this is that I have tried my best to follow the <A
+HREF="http://www.pathname.com/fhs/">File System Hierarchy
+Standard</A>.</P>
+
+<P>Binaries go under <B>/opt/bincimap/bin</B></P>
+
+<P>Host specific configuration goes under <B>/etc/opt/bincimap</B></P>
+
+<P>If you want your files elsewhere, there's always the option to build
+the project from source. :-)</P>
+
+</BLOCKQUOTE>
+
+<HR>
+
+<TABLE WIDTH="99%" ALIGN="CENTER" CELLSPACING="0" CELLPADDING="4">
+  <TR>
+    <TD CLASS="bodytext" BGCOLOR="#FFFFFF"></TD>
+  </TR>
+  <TR>
+    <TD CLASS="headtext" BGCOLOR="#226666">
+      <A HREF="http://validator.w3.org/check/referer">
+        <IMG BORDER="0" SRC="http://www.w3.org/Icons/valid-html401"
+         ALT="Valid HTML 4.01!" HEIGHT="31" WIDTH="88">
+      </A>
+      <A HREF="http://cr.yp.to/djbdns.html"><IMG BORDER="0" WIDTH="88"
+      HEIGHT="31" SRC="djbdns.jpg" ALT="Powered by djbdns!"></A>
+      <IMG BORDER="0" WIDTH="88" HEIGHT="30" SRC="binclogo.gif"
+      ALT="Powered by Binc IMAP">
+    </TD>
+  </TR>
+</TABLE>
+
+</DIV>
+</TD>
+</TR>
+</TABLE>
+<BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR>
+<BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR>
+
+</BODY>
+</HTML>

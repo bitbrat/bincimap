@@ -1,0 +1,159 @@
+This documentation is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of the
+License, or (at your option) any later version.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Street #330, Boston, MA 02111-1307, USA.
+
+=========================================================================
+
+Quick guide to SSL certificates with Binc IMAP.
+
+Table of contents:
+
+0. Introduction
+1. To generate a private key and certificate request
+2. To generate a private key and self-signed certificate
+3. To generate a private key and CA signed certificate, acting as
+   one's own CA.
+
+For more information, check out the project home page's FAQ and
+the Life With Binc IMAP community documentation site:
+
+http://www.lifewithbincimap.org/
+
+=========================================================================
+
+0. Introduction
+---------------
+
+To use SSL with Binc IMAP, you need a private key and a certificate.
+
+A private key is a random string of bits that is secret to your host.
+If this key is compromised, your SSL server will no longer provide
+significant security for your users.
+
+The certificate is among the first things the server sends to a
+client. The client uses this certificate to make certain that it is
+communicating with the correct host. To do this, it needs to check the
+certificate with a trusted third party, usually via a separate
+Internet connection.
+
+There are in general two types of certificates:
+
+- CA signed certificates
+- Self signed certificates
+
+CAs, or Certificate Authorities, are used by clients to verify the
+authenticity of a certificate. If you want an official CA to verify
+your certificate, you need to send a "certificate request".  Usually
+for a certain price, a signed certificate is returned to you. If you
+do not wish to use an official CA, you can act as your own CA and
+create your own CA signed certificates.
+
+A certificate is not valid unless it is signed. If it is self signed,
+the clients can not verify its identity. In that sense, a self signed
+certificate is only useful in a test environment. The client can not
+identify the server if the server uses a self-signed certificate.
+
+The general idea is:
+
+* If you are testing an SSL enabled server, generate a self-signed
+test certificate.
+
+* If you want to provide an SSL enabled service on a closed network,
+create a CA certificate and a signed host certificate, then install
+the CA certificate on all clients on the network.
+
+* If you want to provide an SSL enabled service on an open network
+such as the Internet, use an official CA to sign your certificate.
+
+1. To generate a private key and certificate request
+----------------------------------------------------
+
+Quick hit: "make cert".
+
+To generate a private key and a certificate request, the following
+openssl command can be used:
+
+openssl req -newkey rsa:1024 -keyout bincimap.key -nodes -days 365 -out bincimap.crq
+
+Inside bincimap.crq is a certificate request in PEM encoding, which
+basically means the certificate is base64 encoded and enclosed in a
+start string that says "BEGIN CERTIFICATE REQUEST" and an end string
+that says "END CERTIFICATE REQUEST".
+
+Submit this request file to a CA such as Thawte
+(http://www.thawte.com/) or Verisign (http://www.verisign.com/). When
+you receive the signed certificate from them, store this in a file
+called bincimap.crt.
+
+The file contains the PEM encoded certificate, and it is enclosed in
+a start string that says "BEGIN CERTIFICATE" and an end string that
+says "END CERTIFICATE".
+
+Copy the contents of both these files into a file called
+"bincimap.pem" and place this file at a location that is read-only for
+the bincimap-up process (typically root).
+
+Then edit bincimap.conf, go to the SSL section and set the path of
+this file in the "pem file" option.
+
+You're now ready to use Binc IMAP with SSL.
+
+2. To generate a private key and self-signed certificate
+--------------------------------------------------------
+
+Quick hit: "make testcert".
+
+To generate a private key and a self-signed certificate, the following
+openssl command can be used:
+
+openssl req -newkey rsa:1024 -keyout bincimap.key -x509 -nodes -days 365 -out bincimap.crt
+
+Copy the contents of the generated bincimap.key and bincimap.crt files
+into a file called "bincimap.pem" and place this file at a location
+that is read-only for the bincimap-up process (typically root).
+
+Then edit bincimap.conf, go to the SSL section and set the path of
+this file in the "pem file" option.
+
+You're now ready to test Binc IMAP with SSL.
+ 
+3. To generate a private key and CA signed certificate, acting as
+   one's own CA.
+------------------------------------------------------------------
+
+Quick hit: "make cacert".
+
+First you need to generate a CA certificate. This command creates such
+a certificate and places it in a file called "ca.pem":
+
+openssl req -out ca.pem -new -x509
+
+Using this CA certificate, we can generate a private key and a
+_signed_ certificate, like this:
+
+openssl req -newkey rsa:1024 -keyout bincimap.key -CA ca.pem -nodes -x509 -days 365 -out bincimap.crt
+
+Copy the contents of the generated bincimap.key and bincimap.crt files
+into a file called "bincimap.pem" and place this file at a location
+that is read-only for the bincimap-up process (typically root).
+
+Then edit bincimap.conf, go to the SSL section and set the path of
+this file in the "pem file" option.
+
+You're now ready to use Binc IMAP with SSL.
+
+Happy IMAPing!
+                                                   Andy :-)
+
+=========================================================================
+Tell us what you think about this server! Post any problems, remarks
+or comments to:
+
+The Binc IMAP mailing list <lists-bincimap@infeline.org>
+
+Author: Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>

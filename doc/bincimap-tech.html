@@ -1,0 +1,503 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<HTML>
+
+<HEAD>
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+  <META HTTP-EQUIV="Content-Language" CONTENT="en">
+
+  <TITLE>Binc IMAP - Technical Documentation</TITLE>
+  <META NAME="revisit-after" CONTENT="14 days">
+  <META NAME="keywords" CONTENT="Binc IMAP technical documentation checkpassword daemontools tcpserver xinetd Maildir qmail">
+  <META NAME="description" CONTENT="Andreas Aardal Hanssen">
+  <META NAME="copyright" CONTENT="Copyright Andreas Aardal Hanssen 2002, 2003">
+  <META NAME="distribution" CONTENT="global">
+  <META NAME="author" CONTENT="Andreas Aardal Hanssen">
+  <LINK REL="stylesheet" HREF="bincimap.css" TYPE="text/css">
+  <LINK REL="icon" HREF="/favicon.ico" TYPE="image/ico">
+  <LINK REL="shortcut icon" HREF="/favicon.ico">
+
+</HEAD>
+
+<BODY BGCOLOR="#000000">
+
+<TABLE WIDTH="95%" ALIGN="CENTER" CELLSPACING="0" CELLPADDING="4">
+<TR>
+<TD BGCOLOR="#004444">
+
+<TABLE WIDTH="99%" ALIGN="CENTER" CELLSPACING="0" CELLPADDING="4">
+  <TR>
+    <TD CLASS="headtext" BGCOLOR="#226666" ALIGN="LEFT">
+      <TABLE>
+        <TR>
+          <TD ALIGN="center" VALIGN="middle"><IMG ALT="Binc IMAP logo" SRC="b-button64.png" BORDER="0"></TD>
+          <TD ALIGN="center" VALIGN="middle">Binc IMAP - Technical Documentation</TD>
+        </TR>
+      </TABLE>
+    </TD>
+    <TD CLASS="bodytext" BGCOLOR="#226666" ALIGN="RIGHT">
+        <A HREF="http://www.gnu.org/licenses/gpl.html">GNU General Public License</A><BR>
+        Andreas Aardal Hanssen &lt;andreas@hanssen.name&gt;
+    </TD>
+  </TR>
+  <TR>
+    <TD CLASS="bodytext" BGCOLOR="#FFFFFF" COLSPAN="2"></TD>
+  </TR>
+</TABLE>
+
+<DIV CLASS="bodytext">
+
+<P><U><B>Binc in my home area, IMAPdir and cousins</B></U></P>
+
+<BLOCKQUOTE>
+
+<P>Binc IMAP uses either <A
+HREF="http://www.inter7.com/courierimap/README.maildirquota.html">Maildir++</A>
+or a structure called <A HREF="bincimap-imapdir.html">IMAPdir</A> to
+store its set of mailboxes. <A
+HREF="bincimap-imapdir.html">IMAPdir</A> is more or less similar to <A
+HREF="http://www.inter7.com/courierimap/README.maildirquota.html">Maildir++</A>,
+but it provides more flexibility with regards to mailbox names and
+hierarchy structure.</P>
+
+<P>In a sense, <A HREF="bincimap-imapdir.html">IMAPdir</A> takes all
+the goods from <A
+HREF="http://cr.yp.to/proto/maildir.html">Maildir</A> and adds root
+level mailboxes, submailboxes both of regular root level mailboxes and
+of the special mailbox INBOX, mail in mailboxes of any level, and with
+no restrictions.</P>
+
+<P>In the root of the <A HREF="bincimap-imapdir.html">IMAPdir</A>
+structure, Binc IMAP stores the list of a user's subscribed folders in
+a file called
+<B>bincimap-subscribed</B>. This file should only be edited manually
+if you are confident with <B>Binc::Storage</B>. Normally the
+administrator and the IMAP user will leave this to Binc IMAP.</P>
+
+<P>Binc IMAP's <A
+HREF="http://cr.yp.to/proto/maildir.html">Maildir</A> backend
+(default) will temporarily create a lock file called
+<B>bincimap-scan-lock</B> inside a <A
+HREF="http://cr.yp.to/proto/maildir.html">Maildir</A> when it is
+scanning for mailbox changes and delegating unique message
+identifiers. This is to ensure that UIDs are delegated exactly once to
+every message that has been detected by any one Binc IMAP server
+instance.</P>
+
+<P>Inside each <A
+HREF="http://cr.yp.to/proto/maildir.html">Maildir</A>, Binc IMAP
+stores two files that allow multiple instances of the server to
+communicate the state and changes of the mailbox:
+<B>bincimap-uidvalidity</B> and
+<B>bincimap-cache</B>. These files are safe to delete, although that
+will trigger UIDVALIDITY to bounce and clients may have to
+resynchronize their local state.</P>
+
+</BLOCKQUOTE>
+
+<P><U><B>Object Oriented Design: Brokers, Depots, Operators.</B></U></P>
+
+<BLOCKQUOTE>
+
+<TABLE WIDTH="100%">
+  <TR>
+    <TD VALIGN="TOP">
+      <P>Binc IMAP's design is <I>simple</I> and <I>modular</I>. This
+      makes it <I>easy</I> to maintain and extend.</P>
+
+      <P>Although the IMAP protocol is relatively complex, you will
+      find that Binc IMAP's solution is surprisingly easy to
+      grasp.</P>
+
+      <P>At the heart of Binc IMAP's implementation lies the basic
+      functionality for Object Oriented Design provided by the ISO C++
+      standard and general knowledge in the area of standard Design
+      Patterns.</P>
+
+      <P>The main components are:</P>
+      
+      <UL>
+        <LI>The <A HREF="#Broker">Broker</A></LI>
+        <LI>The <A HREF="#BrokerFactory">BrokerFactory</A></LI>
+	<LI>The <A HREF="#Command">Command</A></LI>
+	<LI>The <A HREF="#Depot">Depot</A></LI>
+        <LI>The <A HREF="#DepotFactory">DepotFactory</A></LI>
+	<LI>The <A HREF="#Mailbox">Mailbox</A></LI>
+        <LI>The <A HREF="#Operator">Operator</A></LI>
+	<LI>The <A HREF="#Session">Session</A></LI>
+	<LI>The <A HREF="#IO">IO</A></LI>
+      </UL>
+    </TD>
+    <TD>
+    <IMG BORDER="0" SRC="bincimap-design-tiny.png" ALT="Binc IMAP, Object Oriented Design">
+    </TD>
+  </TR>
+</TABLE>
+
+<HR>
+<A NAME="Broker"><B>Broker</B></A>
+
+  <P>One <A HREF="#Broker">Broker</A> holds a set of <A
+  HREF="#Operator">Operators</A>. For each
+  <I>state</I> Binc IMAP is in, the <A
+  HREF="#BrokerFactory">BrokerFactory</A> delegates exactly one <A
+  HREF="#Broker">Broker</A> to hold the relevant <A
+  HREF="#Operator">Operator</A> objects.</P>
+
+  <P>Typically, an <A HREF="#Operator">Operator</A> can be assigned to
+  more than one <A HREF="#Broker">Broker</A>. For example, the <A
+  HREF="#Operator">Operator</A> that serves the IMAP command "NOOP" (a
+  command that is available in all three IMAP <I>states</I>),
+  <B>NoopOperator</B>, is available in all <A
+  HREF="#Broker">Broker</A> objects.</P>
+
+  <P>The <A HREF="#Broker">Broker</A> is responsible for first passing
+  the <A HREF="#Depot">Depot</A> and the <A HREF="#IO">IO</A>
+  singleton to the appropriate <A HREF="#Operator">Operator</A>,
+  generating a <A HREF="#Command">Command</A> object.</P>
+
+  <P>The <A HREF="#Broker">Broker</A> is also responsible for passing
+  the resulting <A HREF="#Command">Command</A> object to the <A
+  HREF="#Operator">Operator</A> together with the <A
+  HREF="#Depot">Depot</A>, generating the <I>untagged responses</I>
+  that come as a result of the processing.</P>
+
+  <BR>
+  <TABLE>
+    <TR>
+      <TD BGCOLOR="#555555">
+        <PRE>
+Broker *broker = BrokerFactory.getBroker(STATE_SELECTED);
+if (broker != NULL)
+  throw CriticalException("no broker for selected state");
+
+Command command;
+
+try {
+  broker.parse(com, command);
+  broker.process(depot, command);
+} catch (...
+        </PRE>
+      </TD>
+    </TR>
+  </TABLE>
+
+<HR>
+<A NAME="BrokerFactory"><B>BrokerFactory</B></A>
+
+  <P>The <A HREF="#BrokerFactory">BrokerFactory</A> manages the <A
+  HREF="#Broker">Broker</A> objects.</P>
+
+  <P>Given a <I>state</I>, the <A
+  HREF="#BrokerFactory">BrokerFactory</A> provides a <A
+  HREF="#Broker">Broker</A> that holds all the <A
+  HREF="#Operator">Operator</A> objects available to the client.</P>
+
+  <P>This provides a modular and safe separation of the priviledges
+  available at the different <I>states</I> in the IMAP session.</P>
+
+  <P>The <I>preauthenticate stub</I> has a <A
+  HREF="#BrokerFactory">BrokerFactory</A> that can only generate <A
+  HREF="#Broker">Broker</A> objects for the <I>non-authenticated</I>
+  state.</P>
+
+<HR>
+<A NAME="Command"><B>Command</B></A>
+
+  <P>A <A HREF="#Command">Command</A> object holds all information
+  that was passed to the <A HREF="#Operator">Operator</A> that served
+  a specific IMAP command.</P>
+
+  <P><A HREF="#Command">Command</A> objects are named. Examples of
+  such names are "CHECK", "SUBSCRIBE" and "LOGOUT".</P>
+
+  <P>For the name "FETCH", the <A HREF="#Command">Command</A> object
+  is decorated with
+  <I>sequence set</I>, optionally a <I>section</I> and so on. The
+  <B>parse()</B> method in each <A HREF="#Operator">Operator</A> is
+  responsible for decorating the <A HREF="#Command">Command</A>
+  object.</P>
+
+  <P>The <A HREF="#Command">Command</A> object is
+  <I>short-lived</I>. It is created, decorated, passed on to the <A
+  HREF="#Operator">Operator</A>, then discarded.</P>
+
+<HR>
+<A NAME="Depot"><B>Depot</B></A>
+
+  <P>A <A HREF="#Depot">Depot</A> is responsible for handling the
+  different <A HREF="#Mailbox">Mailbox</A> objects, and it is the
+  mailbox structure authority.</P>
+
+  <P>Given an IMAP mailbox path as input, a <A HREF="#Depot">Depot</A>
+  can give the caller a corresponding <A HREF="#Mailbox">Mailbox</A>
+  object if it finds one that successfully identifies the type of <A
+  HREF="#Mailbox">Mailbox</A>.
+
+  <P>The <A HREF="#Depot">Depot</A> is also aware of what the
+  <I>default</I> <A HREF="#Mailbox">Mailbox</A> type object is. This
+  <A HREF="#Mailbox">Mailbox</A> object is used when creating new IMAP
+  mailboxes.</P>
+
+  <P>Finally, the <A HREF="#Depot">Depot</A> is used to translate
+  mailbox names to a representation on the file system and back. There
+  are currently two specializations of the <A HREF="#Depot">Depot</A>
+  object available: one for <A
+  HREF="http://www.inter7.com/courierimap/README.maildirquota.html">Maildir++</A>
+  and one for <A HREF="bincimap-imapdir.html">IMAPdir</A>. Each has
+  its own characteristics in how do translate the mailbox hierarchy to
+  the file system.</P>
+
+  <TABLE>
+    <TR>
+      <TD BGCOLOR="#555555">
+        <PRE>
+Mailbox *mailbox = depot.getDefaultMailbox();
+if (mailbox == NULL)
+  throw CriticalException("no default mailbox provided");
+
+try {
+  mailbox->imapCreate("work/2003/07/todo");
+} catch (...
+        </PRE>
+      </TD>
+    </TR>
+  </TABLE>
+
+<HR>
+<A NAME="DepotFactory"><B>DepotFactory</B></A>
+
+  <P>The <A NAME="DepotFactory">DepotFactory</A> manages the <A
+  HREF="#Depot">Depot</A> objects.</P>
+
+  <P>New <A HREF="#Depot">Depot</A> objects are assigned to the <A
+  NAME="DepotFactory">DepotFactory</A> in runtime. This makes it easy
+  to add new <A HREF="#Depot">Depot</A> objects using loadable
+  modules. The <A HREF="#Depot">Depot</A> objects are registered and
+  accessed via their <I>names</I>, such as "<A
+  HREF="http://www.inter7.com/courierimap/README.maildirquota.html">Maildir++</A>"
+  or "<A HREF="bincimap-imapdir.html">IMAPdir</A>".</P>
+
+  <P>The <A NAME="DepotFactory">DepotFactory</A> gives individual
+  users of Binc IMAP the option to choose the <A
+  HREF="#Depot">Depot</A> object that suits their needs the best.</P>
+
+<HR>
+<A NAME="IO"><B>IO</B></A>
+
+  <P>The <A HREF="#IO">IO</A> is a <I>global</I>. It consists of two instances -
+  <U>com</U> and <U>logger</U>.</P>
+
+  <P><U>com</U> reads and writes characters to and from the client,
+  and hides the optional SSL encryption.</P>
+
+  <P><U>logger</U> writes characters to Binc IMAP's log files. It
+  hides the method used to log data. Currently it supports logging to
+  stderr and syslog.</P>
+
+<HR>
+<A NAME="Mailbox"><B>Mailbox</B></A>
+
+  <P>The <A HREF="#Mailbox">Mailbox</A> is an abstract for Binc IMAP's different
+  <I>backends</I>. Bundled with Binc is a backend for <A
+  HREF="http://cr.yp.to/proto/maildir.html">Maildir</A>. The class
+  Maildir <I>inherits</I> <A HREF="#Mailbox">Mailbox</A>.</P>
+
+  <P>In short, a <A HREF="#Mailbox">Mailbox</A> contains all methods needed for Binc
+  IMAP to serve a specific backend. It also holds a method to identify
+  a <A HREF="#Mailbox">Mailbox</A> of its own kind.</P>
+
+  <P>All registered <A HREF="#Mailbox">Mailbox</A> objects are held by the
+  <A HREF="#Depot">Depot</A>.</P>
+
+  <BR>
+  <TABLE>
+    <TR>
+      <TD BGCOLOR="#555555">
+        <PRE>
+Mailbox *mailbox = depot.getSelectedMailbox();
+if (mailbox == NULL)
+  throw CriticalException("no selected mailbox in selected state");
+
+mailbox->imapExpunge();
+mailbox->imapClose();
+        </PRE>
+      </TD>
+    </TR>
+  </TABLE>
+
+<HR>
+<A NAME="Operator"><B>Operator</B></A>
+
+  <P>An <A HREF="#Operator">Operator</A> is associated with an IMAP command such as
+  "SEARCH" or "AUTHENTICATE". In short, the <A HREF="#Operator">Operator</A> is used to
+  perform an arbitrary operation on a <A HREF="#Mailbox">Mailbox</A>.<P>
+
+  <P>Typically, an <A HREF="#Operator">Operator</A> can be assigned to one or more
+  <A HREF="#Broker">Broker</A> objects.
+
+  <P>Operators contain, among others, the two public methods:
+  <B>parse()</B> and <B>process()</B>.</P>
+
+  <P>When given the <B>IO singleton</B> as input, the <B>parse()</B>
+  method generates a <A HREF="#Command">Command</A> object. This object can then be
+  fed to <B>process()</B> together with a <A HREF="#Depot">Depot</A>.</P>
+
+  <P>When processing its command, an <A HREF="#Operator">Operator</A> is allowed to
+  generate <I>untagged responses</I> and it can also update the
+  <I>state</I> of a <A HREF="#Mailbox">Mailbox</A>, the <A HREF="#Depot">Depot</A> or the
+  <A HREF="#Session">Session</A> singleton.</P>
+
+  <P><A HREF="#Operator">Operator</A> objects are assigned
+  <I>dynamically</I> to each <A HREF="#Broker">Broker</A>, making it
+  very easy to write
+  <I>extensions</I> that add or replace existing <A
+  HREF="#Operator">Operator</A> objects using Binc IMAP's <I>loadable
+  module support.</I></P>
+
+<HR>
+<A NAME="Session"><B>Session</B></A>
+
+  <P>The <A HREF="#Session">Session</A> is a <I>singleton</I> object that holds
+  information that is relevant to the current IMAP session.</P>
+
+  <P>Currently, the <A HREF="#Session">Session</A> contains information about:</P>
+
+  <UL>
+  <LI>Global configuration (administrator settings)</LI>
+  <LI>Local configuration (user settings)</LI>
+  <LI>Command line arguments</LI>
+  <LI>Folder subscription list</LI>
+  </UL>
+
+<HR>
+
+<P>Last updated on <B>2003-03-20</B>.</P>
+
+<P>Please direct comments on this document to the <A
+HREF="/#mailinglist">Binc IMAP mailing list</A>. Remember to <I>search
+the archives</I> first.</P>
+
+</BLOCKQUOTE>
+
+<TABLE WIDTH="99%" ALIGN="CENTER" CELLSPACING="0" CELLPADDING="4">
+  <TR>
+    <TD CLASS="bodytext" BGCOLOR="#FFFFFF"></TD>
+  </TR>
+  <TR>
+    <TD CLASS="headtext" BGCOLOR="#226666">
+      <A HREF="http://validator.w3.org/check/referer">
+        <IMG BORDER="0" SRC="http://www.w3.org/Icons/valid-html401"
+         ALT="Valid HTML 4.01!" HEIGHT="31" WIDTH="88">
+      </A>
+      <A HREF="http://cr.yp.to/djbdns.html"><IMG BORDER="0" WIDTH="88"
+      HEIGHT="31" SRC="djbdns.jpg" ALT="Powered by djbdns!"></A>
+      <IMG BORDER="0" WIDTH="88" HEIGHT="30" SRC="binclogo.gif"
+      ALT="Powered by Binc IMAP">
+    </TD>
+  </TR>
+</TABLE>
+
+</DIV>
+</TD>
+</TR>
+</TABLE>
+<BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR>
+<BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR>
+
+</BODY>
+</HTML>
+style with only LF. The MaildirMessage is an
+  implementation of Message used in Maildir. When using a Maildir
+  mailbox, Mailbox::iterator will return a reference to a
+  MaildirMessage. MaildirMessage also uses a MaildirMessageCache
+  singleton to handle cacheing of messages.</P>
+
+  <P>Although the inside of MaildirMessage both deals with files,
+  cacheing and MIME, the Operator needs not think about this.</P>
+
+</BLOCKQUOTE>
+
+<HR>
+<A NAME="Operator"><B>Operator</B></A>
+<BLOCKQUOTE>
+
+  <P>An <A HREF="#Operator">Operator</A> is associated with an IMAP command such as
+  "SEARCH" or "AUTHENTICATE". In short, the <A HREF="#Operator">Operator</A> is used to
+  perform an arbitrary operation on a <A HREF="#Mailbox">Mailbox</A>.<P>
+
+  <P>Typically, an <A HREF="#Operator">Operator</A> can be assigned to one or more
+  <A HREF="#Broker">Broker</A> objects.
+
+  <P>Operators contain, among others, the two public methods:
+  <B>parse()</B> and <B>process()</B>.</P>
+
+  <P>The <B>parse()</B> method decorates a <A
+  HREF="#Request">Request</A> object. This object can then be fed to
+  <B>process()</B> together with a <A HREF="#Depot">Depot</A>.</P>
+
+  <P>When processing its request, an <A HREF="#Operator">Operator</A>
+  is allowed to generate <I>untagged responses</I> and it can also
+  update the <I>state</I> of a <A HREF="#Mailbox">Mailbox</A>, the <A
+  HREF="#Depot">Depot</A> or the <A HREF="#Session">Session</A>
+  singleton.</P>
+
+  <P><A HREF="#Operator">Operator</A> objects are assigned
+  <I>dynamically</I> to each <A HREF="#Broker">Broker</A>, making it
+  very easy to write <I>extensions</I> that add or replace existing <A
+  HREF="#Operator">Operator</A> objects using Binc IMAP's <I>loadable
+  module support.</I></P>
+</BLOCKQUOTE>
+
+<HR>
+<A NAME="Session"><B>Session</B></A>
+<BLOCKQUOTE>
+  <P>The <A HREF="#Session">Session</A> is a <I>singleton</I> object that holds
+  information that is relevant to the current IMAP session.</P>
+
+  <P>Currently, the <A HREF="#Session">Session</A> contains information about:</P>
+
+  <UL>
+    <LI>Global configuration (administrator settings)</LI>
+    <LI>Local configuration (user settings)</LI>
+    <LI>Command line arguments</LI>
+    <LI>Folder subscription list</LI>
+  </UL>
+</BLOCKQUOTE>
+
+<HR>
+
+<P>Last updated on <B>2003-07-31</B>.</P>
+
+<P>Please direct comments on this document to the <A
+HREF="/#mailinglist">Binc IMAP mailing list</A>. Remember to <I>search
+the archives</I> first.</P>
+
+</BLOCKQUOTE>
+
+<TABLE WIDTH="99%" ALIGN="CENTER" CELLSPACING="0" CELLPADDING="4">
+  <TR>
+    <TD CLASS="bodytext" BGCOLOR="#FFFFFF"></TD>
+  </TR>
+  <TR>
+    <TD CLASS="headtext" BGCOLOR="#226666">
+      <A HREF="http://validator.w3.org/check/referer">
+        <IMG BORDER="0" SRC="http://www.w3.org/Icons/valid-html401"
+         ALT="Valid HTML 4.01!" HEIGHT="31" WIDTH="88">
+      </A>
+      <A HREF="http://cr.yp.to/djbdns.html"><IMG BORDER="0" WIDTH="88"
+      HEIGHT="31" SRC="djbdns.jpg" ALT="Powered by djbdns!"></A>
+      <IMG BORDER="0" WIDTH="88" HEIGHT="30" SRC="binclogo.gif"
+      ALT="Powered by Binc IMAP">
+    </TD>
+  </TR>
+</TABLE>
+
+</DIV>
+</TD>
+</TR>
+</TABLE>
+<BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR>
+<BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR><BR>
+
+</BODY>
+</HTML>
