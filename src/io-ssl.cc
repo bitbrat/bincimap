@@ -105,6 +105,9 @@ bool SSLEnabledIO::setModeSSL(void)
   string CAfile = session.globalconfig["SSL"]["ca file"];
   if (CAfile == "") CAfile == "/usr/share/ssl/certs/.crt";
 
+  string CApath = session.globalconfig["SSL"]["ca path"];
+  if (CApath == "") CApath == "/usr/share/ssl/certs/";
+
   SSL_CTX_set_default_verify_paths(ctx);
 
   string pemname = session.globalconfig["SSL"]["pem file"];
@@ -128,6 +131,12 @@ bool SSLEnabledIO::setModeSSL(void)
     setLastError("SSL error: public and private key in PEM file"
 		 " don't match: " 
 		 + pemname + ": "
+		 + string(ERR_error_string(ERR_get_error(), 0)));
+    return false;
+  }
+
+  if (!SSL_CTX_load_verify_locations(ctx, CAfile.c_str(), CApath.c_str())) {
+    setLastError("SSL error: unable to load CA file or path: "
 		 + string(ERR_error_string(ERR_get_error(), 0)));
     return false;
   }

@@ -184,8 +184,13 @@ The path to the SSL certificate file, in PEM format.
 
 .TP
 \fBSSL::ca file = <file>\fR
-A file used to list certificate authorities in. It is sent to the
-client to help the client verify the SSL certificate.
+A file with one or more certificate authority certificates. It is used
+to help the client verify the SSL certificate.
+
+.TP
+\fBSSL::ca path = <path>\fR
+A path with lists of certificate authorities' cerficates. It is used
+to help the client verify the SSL certificate.
 
 .TP
 \fBSSL::cipher list = <cipherlist>\fR
