@@ -10,7 +10,7 @@ dnl USA.
 
 dnl Process this file with autoconf to produce a configure script.
 dnl AC_PREREQ(2.57)
-AC_INIT(bincimap, 1.2.6final, bincimap@andreas.hanssen.name)
+AC_INIT(bincimap, 1.2.7beta1, bincimap@andreas.hanssen.name)
 AC_CONFIG_SRCDIR([config.h.in])
 AM_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
@@ -160,7 +160,7 @@ dnl ---------------------------------------------------------------------------
 
 AC_ARG_WITH(openssl-lib,
 	 AC_HELP_STRING([--with-openssl-lib], [Set path to OpenSSL libraries]),
-	 [ if [[ "x$withval" != "xno" -a "x$withval" != "xyes" ]]; then LDFLAGS="$LDFLAGS -L$withval"; fi ],)
+	 [ if [[ "x$withval" != "xno" -a "x$withval" != "xyes" ]]; then LDFLAGS="$LDFLAGS -L$withval"; SSLLIBS=$withval; fi ],)
 
 AC_ARG_WITH(openssl-include,
 	 AC_HELP_STRING([--with-openssl-include], [Set path to OpenSSL headers]),
@@ -179,7 +179,7 @@ if [[ "$WITH_SSL" = "1" ]]; then
   AC_DEFINE(WITH_SSL, 1, [Define to 1 if SSL support is included.])
 
   export LDTMP=$LDFLAGS
-  for k in found /usr/lib /usr/local/lib /usr/local/ssl/lib /usr/local/openssl/lib /opt/ssl/lib /opt/openssl/lib; do
+  for k in found $SSLLIBS /usr/lib /usr/local/lib /usr/local/ssl/lib /usr/local/openssl/lib /opt/ssl/lib /opt/openssl/lib; do
       export LDFLAGS="-L$k $LDTMP -lssl -lcrypto"
       AC_TRY_LINK([#include <openssl/ssl.h>], [SSL_write(0, 0, 0);], LIBSSL="-L$k -lssl -lcrypto"; AC_MSG_RESULT($k), [])
       if [[ "x$LIBSSL" != "x" ]]; then break; fi
