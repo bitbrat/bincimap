@@ -347,7 +347,7 @@ int Binc::authenticate(Depot &depot, const string &username,
     }
 
     if (FD_ISSET(intercomr[0], &rtmp)) {
-      char buf[1024];
+      char buf[8192];
       int ret = read(intercomr[0], buf, sizeof(buf));
       if (ret == 0) {
 	// Main server has shut down
