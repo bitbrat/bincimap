@@ -174,10 +174,15 @@ Maildir::ScanResult Maildir::scan(void)
   // conditions with uid delegation
   Lock lock(path);
 
-  // If the cache files have not been read, then read them
+  // Read the cache file if it's there. It holds important information
+  // about the state of the depository, and serves to communicate
+  // changes to the depot across Binc IMAP instances that can not be
+  // communicated via the depot itself.
   switch (readCache()) {
   case NoCache:
   case Error:
+    // An error with reading the cache files when it's not the first
+    // time we scan the depot is treated as an error.
     if (!firstscan) {
       old_cur_st_mtime = (time_t) 0;
       old_cur_st_ctime = (time_t) 0;
@@ -185,14 +190,18 @@ Maildir::ScanResult Maildir::scan(void)
       old_new_st_ctime = (time_t) 0;
       return TemporaryError;
     }
+
+    uidnextchanged = true;
+    mailboxchanged = true;
+    break;
   default:
     break;
   }
 
-  // open directory
+  // open new/ directory
   DIR *pdir = opendir(newpath.c_str());
   if (pdir == 0) {
-    string reason = "Maildir::scan::opendir(\"" + newpath + "\") == 0 (";
+    string reason = "failed to open \"" + newpath + "\" (";
     reason += strerror(errno);
     reason += ")";
     setLastError(reason);
@@ -203,11 +212,11 @@ Maildir::ScanResult Maildir::scan(void)
   // scan all entries
   struct dirent *pdirent;
   while ((pdirent = readdir(pdir)) != 0) {
-    // Unless you're writing messages to a maildir, the format of a
+    // "Unless you're writing messages to a maildir, the format of a
     // unique name is none of your business. A unique name can be
     // anything that doesn't contain a colon (or slash) and doesn't
     // start with a dot. Do not try to extract information from unique
-    // names.
+    // names." - The Maildir spec from cr.yp.to
     string filename = pdirent->d_name;
     if (filename[0] == '.'
 	|| filename.find(':') != string::npos
@@ -216,6 +225,11 @@ Maildir::ScanResult Maildir::scan(void)
 
     string fullfilename = newpath + filename;
 
+    // We need to find the timestamp of the message in order to
+    // determine whether or not it's safe to move the message in from
+    // new/. qmail's default message file naming algorithm forces us
+    // to never move messages out of new/ that are less than one
+    // second old.
     struct stat mystat;
     if (stat(fullfilename.c_str(), &mystat) != 0) {
       if (errno == ENOENT) {
@@ -241,7 +255,8 @@ Maildir::ScanResult Maildir::scan(void)
     // this is important. do not move messages from new/ that are not
     // at least one second old or messages may disappear. this
     // introduces a special case: we can not cache the old st_ctime
-    // and st_mtime 
+    // and st_mtime. the next time the mailbox is scanned, it must not
+    // simply be skipped. :-)
     if (::time(0) <= mystat.st_mtime) {
       old_cur_st_mtime = (time_t) 0;
       old_cur_st_ctime = (time_t) 0;
@@ -262,7 +277,8 @@ Maildir::ScanResult Maildir::scan(void)
 
   closedir(pdir);
 
-  // Now, assume all known messages were expunged
+  // Now, assume all known messages were expunged and have them prove
+  // otherwise.
   {
     Mailbox::iterator i = begin(SequenceSet::all(), INCLUDE_EXPUNGED | SQNR_MODE);
     for (; i != end(); ++i)
@@ -275,7 +291,6 @@ Maildir::ScanResult Maildir::scan(void)
   int oldmess = 0;
   int newmess = 0;
 
-  
   if ((pdir = opendir(curpath.c_str())) == 0) {
     string reason = "Maildir::scan::opendir(\"" + curpath + "\") == 0 (";
     reason += strerror(errno);
@@ -285,7 +300,8 @@ Maildir::ScanResult Maildir::scan(void)
     return PermanentError;
   }
 
-  // erase all old maps between fixed filenames and actual file names
+  // erase all old maps between fixed filenames and actual file names.
+  // we'll get a new list now, which will be more up to date.
   index.clearFileNames();
 
   // this is to sort recent messages by internaldate
@@ -466,11 +482,10 @@ Maildir::ScanResult Maildir::scan(void)
   }
 
   if (mailboxchanged && !readOnly) {
-    if (!writeCache()) {
+    if (!writeCache())
       return PermanentError;
-    } else {
-      mailboxchanged = false;
-    }
+
+    mailboxchanged = false;
   }
 
   if (uidnextchanged && !readOnly) {
