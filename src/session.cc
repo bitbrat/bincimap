@@ -382,20 +382,6 @@ void Session::importFromEnv(void)
 
     ++cnt;
   }
-
-  map<string, map<string, string> >::const_iterator it = globalconfig.begin();
-  for (; it != globalconfig.end(); ++it) {
-    string section = it->first;
-    map<string, string>::const_iterator jt = it->second.begin();
-    for (; jt != it->second.end(); ++jt) {
-      string key = jt->first;
-      string value = jt->second;
-      string tmp = section + "::" + key + "=" + value;
-      write(667, tmp.c_str(), tmp.length());
-    }
-  }
-
-
 }
 
 //----------------------------------------------------------------------

@@ -237,12 +237,6 @@ bool CommandLineArgs::parse(int argc, char *argv[])
   if (ac == -1)
     ac = argc;
 
-  map<string, string>::const_iterator it2 = args.begin();
-  for (; it2 != args.end(); ++it2) {
-    string s = it2->first + " => " + it2->second;
-    write(666, s.c_str(), s.length());
-  }
-
   return true;
 }
 
