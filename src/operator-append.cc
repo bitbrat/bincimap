@@ -184,10 +184,10 @@ Operator::ProcessResult AppendOperator::process(Depot &depot,
   com.disableInputLimit();
 
   while (nchars > 0) {
-    // Read in chunks of 1024, followed by an optional chunk at the
-    // end which is < 1024 bytes.
+    // Read in chunks of 8192, followed by an optional chunk at the
+    // end which is < 8192 bytes.
     string s;
-    int bytesToRead = nchars > 1024 ? 1024 : nchars;
+    int bytesToRead = nchars > 8192 ? 8192 : nchars;
     int readBytes = com.readStr(s, bytesToRead);
     if (readBytes <= 0) {
       mailbox->rollBackNewMessages();
