@@ -67,6 +67,14 @@ namespace Binc {
   }
 
   //----------------------------------------------------------------------
+  inline std::string toString(unsigned long i_in)
+  {
+    char longbuf[40];
+    snprintf(longbuf, sizeof(longbuf), "%lu", i_in);
+    return std::string(longbuf);
+  }
+
+  //----------------------------------------------------------------------
   inline std::string toString(const char *i_in)
   {
     return std::string(i_in);
