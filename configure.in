@@ -10,7 +10,7 @@ dnl USA.
 
 dnl Process this file with autoconf to produce a configure script.
 dnl AC_PREREQ(2.57)
-AC_INIT(bincimap, 1.2.7beta2, bincimap@andreas.hanssen.name)
+AC_INIT(bincimap, 1.2.7beta3, andreas-binc@bincimap.org)
 AC_CONFIG_SRCDIR([config.h.in])
 AM_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
@@ -164,7 +164,7 @@ AC_ARG_WITH(openssl-lib,
 
 AC_ARG_WITH(openssl-include,
 	 AC_HELP_STRING([--with-openssl-include], [Set path to OpenSSL headers]),
-	 [ if [[ "x$withval" != "xno" -a "x$withval" != "xyes" ]]; then CXXFLAGS="$CXXFLAGS -I$withval"; fi ],)
+	 [ if [[ "x$withval" != "xno" -a "x$withval" != "xyes" ]]; then CXXFLAGS="$CXXFLAGS -I$withval"; SSLINCLUDEPATH=$withval; fi ],)
 
 AC_ARG_WITH(ssl,
             AC_HELP_STRING([--with-ssl], [Enable SSL support (default)])
@@ -179,6 +179,19 @@ if [[ "$WITH_SSL" = "1" ]]; then
   export LIBS="$LIBS -lsocket"
   AC_TRY_LINK([], [], LIBSOCKET="-lsocket"; AC_MSG_RESULT(yes), AC_MSG_RESULT(no))
   export LIBS=$LDTMP
+
+  AC_MSG_CHECKING(for OpenSSL includes)
+  export CXXTMP=$CXXFLAGS
+  for k in found $SSLINCLUDEPATH /usr/include /usr/local/include /usr/local/ssl/include /usr/local/openssl/include /opt/ssl/include /opt/openssl/include; do
+      export CXXFLAGS="$CXXTMP -I$k"
+      AC_TRY_COMPILE([#include <openssl/ssl.h>], [SSL_write(0, 0, 0);], INCLUDESSL="-I$k"; AC_MSG_RESULT($k), [])
+      if [[ "x$INCLUDESSL" != "x" ]]; then break; fi
+  done
+
+  if [[ "x$INCLUDESSL" = "x" ]]; then
+      AC_MSG_RESULT(not found)
+      export CXXFLAGS=$CXXTMP
+  fi
 
   AC_MSG_CHECKING(for OpenSSL libraries)
   export LIBTMP=$LIBS
