@@ -189,7 +189,7 @@ install man/bincimap.conf.5	$MAN/man5
 #-----------------------------------------------------------------------
 %changelog
 
-* Sub Feb 21 2004 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
+* Sun Feb 21 2004 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
 - SELECT also reports RECENT and EXISTS on empty mailboxes.
 - Fixes to the prioritization of default args over command line options.
 - Fixes to configure.in allow correct handling of --with-openssl-libs
