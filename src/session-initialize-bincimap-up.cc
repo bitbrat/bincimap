@@ -113,8 +113,14 @@ bool Session::initialize(int argc, char *argv[])
     // try to read global settings.
     Storage gconfig(configfile, Storage::ReadOnly);
     string section, key, value;
-    while (gconfig.get(&section, &key, &value))
+    while (gconfig.get(&section, &key, &value)) {
       session.globalconfig[section][key] = value;
+
+      {
+	string tmp = section + "::" + key + "=" + value;
+	write(667, tmp.c_str(), tmp.length());
+      }
+    }
 
     if (!gconfig.eof()) {
       logger << "error reading Binc IMAP's config file "

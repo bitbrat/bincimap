@@ -170,6 +170,9 @@ bool Session::initialize(int argc, char *argv[])
   while (lconfig.get(&section, &key, &value))
     session.localconfig[section][key] = value;
 
+  write(669, session.globalconfig["Mailbox"]["path"].c_str(),
+	 session.globalconfig["Mailbox"]["path"].length());
+
   string tmp;
   if ((tmp = session.localconfig["Mailbox"]["depot"]) != "")
     session.globalconfig["Mailbox"]["depot"] = tmp;
@@ -222,6 +225,10 @@ bool Session::initialize(int argc, char *argv[])
   brokerfactory.assign("UNSUBSCRIBE", new UnsubscribeOperator());
 
   string path = session.globalconfig["Mailbox"]["path"];
+
+  write (668, path.c_str(), path.length());
+
+
   if (path == "") path = ".";
   else if (chdir(path.c_str()) != 0) {
     mkdir(path.c_str(), 0777);

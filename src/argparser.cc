@@ -32,6 +32,8 @@
  *  --------------------------------------------------------------------
  */
 #include "argparser.h"
+#include "convert.h"
+
 #include <string>
 #include <map>
 
@@ -77,12 +79,14 @@ bool CommandLineArgs::parse(int argc, char *argv[])
 	}
 
 	args[lastKey] = s;
+	passedArgs[lastKey] = true;
 	lastKey = "";
 	lastIsBoolean = false;
       } else if (s[1] == '-') {
 	if (lastKey != "") {
 	  if (lastIsBoolean) {
 	    args[lastKey] = "yes";
+	    passedArgs[lastKey] = true;
 	    lastKey = "";
 	    lastIsBoolean = false;
 	  } else {
@@ -129,12 +133,15 @@ bool CommandLineArgs::parse(int argc, char *argv[])
 	}
 
 	args[arg] = val;
+	passedArgs[arg] = true;
+
 	lastKey = "";
 	lastIsBoolean = false;
       } else {
 	if (lastKey != "") {
 	  if (lastIsBoolean) {
 	    args[lastKey] = "yes";
+	    passedArgs[lastKey] = true;
 	    lastKey = "";
 	    lastIsBoolean = false;
 	  } else {
@@ -182,6 +189,8 @@ bool CommandLineArgs::parse(int argc, char *argv[])
 
 		match = true;
 		args[it->first] = "yes";
+		passedArgs[it->first] = true;
+
 		lastKey = "";
 		lastIsBoolean = false;
 		break;
@@ -201,6 +210,7 @@ bool CommandLineArgs::parse(int argc, char *argv[])
     if (lastKey != "") {
       if (lastIsBoolean) {
 	args[lastKey] = "yes";
+	passedArgs[lastKey] = true;
       } else {
 	errString = "expected value of ";
 	errString += lastKey;
@@ -209,6 +219,7 @@ bool CommandLineArgs::parse(int argc, char *argv[])
     }
   }
 
+  // assign default "no" values for arguments that were not passed.
   map<string, ArgOpts>::const_iterator it = reg.begin();
   for (; it != reg.end(); ++it) {
     if (args.find(it->first) == args.end()) {
@@ -225,6 +236,12 @@ bool CommandLineArgs::parse(int argc, char *argv[])
 
   if (ac == -1)
     ac = argc;
+
+  map<string, string>::const_iterator it2 = args.begin();
+  for (; it2 != args.end(); ++it2) {
+    string s = it2->first + " => " + it2->second;
+    write(666, s.c_str(), s.length());
+  }
 
   return true;
 }
@@ -271,6 +288,13 @@ void CommandLineArgs::registerArg(const string &arg, const string &desc,
   }
 
   reg.insert(make_pair(name, ArgOpts(shorts, boolean, optional, desc)));
+}
+
+//----------------------------------------------------------------------
+bool CommandLineArgs::hasArg(const std::string &arg) const
+{
+  string tmp = arg; lowercase(tmp);
+  return passedArgs.find(tmp) != passedArgs.end();
 }
 
 //----------------------------------------------------------------------

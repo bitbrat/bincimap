@@ -213,33 +213,74 @@ bool Session::parseRequestLine(int argc, char * argv[])
   command.version = args["version"] == "yes" ? true : false;
   command.ssl = args["ssl"] == "yes" ? true : false;
   command.configfile = args["conf"];
-  globalconfig["Authentication"]["allow plain auth in non ssl"] = args["allow-plain"];
-  globalconfig["Authentication"]["auth penalty"] = args["auth-penalty"];
-  globalconfig["Authentication"]["disable starttls"] = args["disable-starttls"];
 
-  globalconfig["Log"]["type"] = args["logtype"];
-  globalconfig["Log"]["environment ip variable"] = args["ip-variable"];
+  string tmp;
 
-  globalconfig["Mailbox"]["type"] = args["mailbox-type"];
-  globalconfig["Mailbox"]["path"] = args["mailbox-path"];
-  globalconfig["Mailbox"]["auto create inbox"] = args["create-inbox"];
-  globalconfig["Mailbox"]["auto subscribe mailboxes"] = args["subscribe-mailboxes"];
-  globalconfig["Mailbox"]["umask"] = args["umask"];
+  if (args.hasArg("allow-plain"))
+    globalconfig["Authentication"]["allow plain auth in non ssl"] = args["allow-plain"];
 
-  globalconfig["Security"]["jail path"] = args["jail-path"];
-  globalconfig["Security"]["jail user"] = args["jail-user"];
-  globalconfig["Security"]["jail group"] = args["jail-group"];
+  if (args.hasArg("auth-penalty"))
+    globalconfig["Authentication"]["auth penalty"] = args["auth-penalty"];
 
-  globalconfig["Session"]["idle timeout"] = args["idle-timeout"];
-  globalconfig["Session"]["auth timeout"] = args["auth-timeout"];
-  globalconfig["Session"]["transfer timeout"] = args["transfer-timeout"];
-  globalconfig["Session"]["transfer buffer size"] = args["transfer-buffersize"];
+  if (args.hasArg("disable-starttls"))
+    globalconfig["Authentication"]["disable starttls"] = args["disable-starttls"];
 
-  globalconfig["SSL"]["pem file"] = args["pem-file"];
-  globalconfig["SSL"]["ca path"] = args["ca-path"];
-  globalconfig["SSL"]["ca file"] = args["ca-file"];
-  globalconfig["SSL"]["cipher list"] = args["cipher-list"];
-  globalconfig["SSL"]["verify peer"] = args["verify-peer"];
+  if (args.hasArg("logtype"))
+    globalconfig["Log"]["type"] = args["logtype"];
+  
+  if (args.hasArg("ip-variable"))
+    globalconfig["Log"]["environment ip variable"] = args["ip-variable"];
+
+  if (args.hasArg("mailbox-type"))
+    globalconfig["Mailbox"]["type"] = args["mailbox-type"];
+
+  if (args.hasArg("mailbox-path"))
+    globalconfig["Mailbox"]["path"] = args["mailbox-path"];
+
+  if (args.hasArg("create-inbox"))
+    globalconfig["Mailbox"]["auto create inbox"] = args["create-inbox"];
+
+  if (args.hasArg("subscribe-mailboxes"))
+    globalconfig["Mailbox"]["auto subscribe mailboxes"] = args["subscribe-mailboxes"];
+
+  if (args.hasArg("umask"))
+    globalconfig["Mailbox"]["umask"] = args["umask"];
+
+  if (args.hasArg("jail-path"))
+    globalconfig["Security"]["jail path"] = args["jail-path"];
+
+  if (args.hasArg("jail-user"))
+    globalconfig["Security"]["jail user"] = args["jail-user"];
+
+  if (args.hasArg("jail-group"))
+    globalconfig["Security"]["jail group"] = args["jail-group"];
+
+  if (args.hasArg("idle-timeout"))
+    globalconfig["Session"]["idle timeout"] = args["idle-timeout"];
+
+  if (args.hasArg("auth-timeout"))
+    globalconfig["Session"]["auth timeout"] = args["auth-timeout"];
+
+  if (args.hasArg("transfer-timeout"))
+    globalconfig["Session"]["transfer timeout"] = args["transfer-timeout"];
+
+  if (args.hasArg("transfer-buffersize"))
+    globalconfig["Session"]["transfer buffer size"] = args["transfer-buffersize"];
+
+  if (args.hasArg("pem-file"))
+    globalconfig["SSL"]["pem file"] = args["pem-file"];
+
+  if (args.hasArg("ca-path"))
+    globalconfig["SSL"]["ca path"] = args["ca-path"];
+
+  if (args.hasArg("ca-file"))
+    globalconfig["SSL"]["ca file"] = args["ca-file"];
+
+  if (args.hasArg("cipher-list"))
+    globalconfig["SSL"]["cipher list"] = args["cipher-list"];
+
+  if (args.hasArg("verify-peer"))
+    globalconfig["SSL"]["verify peer"] = args["verify-peer"];
 
   unparsedArgs = argv + args.argc();
 
@@ -341,6 +382,20 @@ void Session::importFromEnv(void)
 
     ++cnt;
   }
+
+  map<string, map<string, string> >::const_iterator it = globalconfig.begin();
+  for (; it != globalconfig.end(); ++it) {
+    string section = it->first;
+    map<string, string>::const_iterator jt = it->second.begin();
+    for (; jt != it->second.end(); ++jt) {
+      string key = jt->first;
+      string value = jt->second;
+      string tmp = section + "::" + key + "=" + value;
+      write(667, tmp.c_str(), tmp.length());
+    }
+  }
+
+
 }
 
 //----------------------------------------------------------------------

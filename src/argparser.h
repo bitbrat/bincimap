@@ -69,6 +69,8 @@ namespace Binc {
 		     bool boolean);
     void addRequired(const std::string &arg, const std::string &desc,
 		     bool boolean);
+    bool hasArg(const std::string &arg) const;
+
     std::string usageString(void) const;
 
     void setTail(const std::string &str);
@@ -80,6 +82,7 @@ namespace Binc {
     std::string errString;
     std::map<std::string, ArgOpts> reg;
     std::map<std::string, std::string> args;
+    std::map<std::string, bool> passedArgs;
     std::string tail;
     std::string head;
     int ac;
