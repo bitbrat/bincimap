@@ -10,58 +10,72 @@ dnl USA.
 
 dnl Process this file with autoconf to produce a configure script.
 dnl AC_PREREQ(2.57)
-AC_INIT(bincimap, 1.2.7beta5, andreas-binc@bincimap.org)
+AC_INIT(bincimap, 1.2.7beta6, andreas-binc@bincimap.org)
 AC_CONFIG_SRCDIR([config.h.in])
 AM_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE
 
 dnl Checks for programs.
 AC_PROG_CXX
-AC_PROG_CC
 AC_PROG_INSTALL
-AC_PROG_MAKE_SET
-AC_PROG_AWK
-AM_PROG_LEX
-AC_PROG_LN_S
-AC_PROG_RANLIB
-AC_PROG_YACC
 
 dnl Checks for typedefs, structures, and compiler characteristics.
-AC_HEADER_DIRENT
-AC_HEADER_STDBOOL
-AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS([fcntl.h stddef.h stdlib.h string.h unistd.h sys/time.h syslog.h utime.h wait.h])
 
-dnl Checks for typedefs, structures, and compiler characteristics.
-AC_C_CONST
-AC_TYPE_UID_T
-AC_C_INLINE
-AC_TYPE_MODE_T
-AC_TYPE_PID_T
-AC_TYPE_SIZE_T
-AC_STRUCT_TM
+dnl C++ will be used for all compile tests
+AC_LANG_CPLUSPLUS
 
-dnl Checks for library functions.
-AC_FUNC_CHOWN
-AC_FUNC_CLOSEDIR_VOID
-AC_FUNC_FORK
-AC_FUNC_LSTAT
-AC_FUNC_MALLOC
-AC_FUNC_MKTIME
-AC_FUNC_REALLOC
-AC_FUNC_SELECT_ARGTYPES
-AC_TYPE_SIGNAL
-AC_FUNC_STAT
-AC_FUNC_STRFTIME
-AC_FUNC_STRTOD
-AC_FUNC_UTIME_NULL
-AC_FUNC_ERROR_AT_LINE
-AC_CHECK_FUNCS([alarm dup2 getcwd gethostname gettimeofday memset mkdir putenv regcomp rmdir select setenv strchr strdup strerror strtol utime])
+dnl Silly autoconf
+prefix=$(eval echo $(eval echo ${prefix}))
+AC_MSG_CHECKING(--prefix)
+if [[ "x$prefix" = "xNONE" ]]; then
+   AC_MSG_RESULT([/usr/local])
+   prefix=/usr/local
+else
+   AC_MSG_RESULT(using $prefix)
+fi
+AC_SUBST(prefix)
 
-dnl ---------------------------------------------------------------------------
+bindir=$(eval echo $(eval echo ${bindir}))
+AC_MSG_CHECKING(--bindir)
+if [[ "x$bindir" = "xNONE/bin" ]]; then
+   AC_MSG_RESULT([$prefix/bin])
+   bindir=$prefix/bin
+else
+   AC_MSG_RESULT(using $bindir)
+fi
+AC_SUBST(bindir)
 
-AC_PREFIX_DEFAULT(/opt/bincimap)
+
+sysconfdir=$(eval echo $(eval echo ${sysconfdir}))
+AC_MSG_CHECKING(--sysconfdir)
+if [[ "x$sysconfdir" = "xNONE/etc" ]]; then
+   AC_MSG_RESULT([$prefix/etc])
+   sysconfdir=$prefix/etc
+else
+   AC_MSG_RESULT(using $sysconfdir)
+fi
+AC_SUBST(sysconfdir)
+
+localstatedir=$(eval echo $(eval echo ${localstatedir}))
+AC_MSG_CHECKING(--localstatedir)
+if [[ "x$localstatedir" = "xNONE/var" ]]; then
+   AC_MSG_RESULT([$prefix/var])
+   localstatedir=$prefix/var
+else
+   AC_MSG_RESULT(using $localstatedir)
+fi
+AC_SUBST(sysconfdir)
+
+datadir=$(eval echo $(eval echo ${datadir}))
+AC_MSG_CHECKING(--datadir)
+if [[ "x$datadir" = "xNONE/share" ]]; then
+   AC_MSG_RESULT([$prefix/share])
+   datadir=$prefix/share
+else
+   AC_MSG_RESULT(using $datadir)
+fi
+AC_SUBST(datadir)
 
 dnl ---------------------------------------------------------------------------
 
@@ -79,57 +93,9 @@ CXXFLAGS="$CXXFLAGS -Wall -fno-exceptions"
 
 dnl ---------------------------------------------------------------------------
 
-prefix=$(eval echo $(eval echo ${prefix}))
-AC_MSG_CHECKING(--prefix)
-if [[ "x$prefix" = "xNONE" ]]; then
-   AC_MSG_RESULT([/opt/bincimap])
-   prefix=/opt/bincimap
-   AC_SUBST(prefix)
-else
-   AC_MSG_RESULT(using $prefix)
-fi
-
-dnl ---------------------------------------------------------------------------
-
-sysconfdir=$(eval echo $(eval echo ${sysconfdir}))
-AC_MSG_CHECKING(--sysconfdir)
-if [[ "x$sysconfdir" = "x$prefix/etc" ]]; then
-   AC_MSG_RESULT([/etc/opt/bincimap])
-   sysconfdir=/etc/opt/bincimap
-   AC_SUBST(sysconfdir)
-else
-   AC_MSG_RESULT(using $sysconfdir)
-fi
-
-dnl ---------------------------------------------------------------------------
-
-localstatedir=$(eval echo $(eval echo ${localstatedir}))
-AC_MSG_CHECKING(--localstatedir)
-if [[ "x$localstatedir" = "x$prefix/var" ]]; then
-   AC_MSG_RESULT([/var/opt/bincimap])
-   localstatedir=/var/opt/bincimap
-   AC_SUBST(localstatedir)
-else
-   AC_MSG_RESULT(using $localstatedir)
-fi
-
-dnl ---------------------------------------------------------------------------
-
-datadir=$(eval echo $(eval echo ${datadir}))
-AC_MSG_CHECKING(--datadir)
-if [[ "x$datadir" = "x$prefix/share" ]]; then
-   AC_MSG_RESULT([/var/opt/bincimap])
-   datadir=/var/opt/bincimap
-   AC_SUBST(datadir)
-else
-   AC_MSG_RESULT(using $datadir)
-fi
-
-dnl ---------------------------------------------------------------------------
-
 AC_ARG_ENABLE(static,
               AC_HELP_STRING([--enable-static], [Enable static compile]),
-              [ if [[ "x$enableval" != "xno" ]]; then STATIC="-static --all-static"; fi ], [])
+              [ if [[ "x$enableval" != "xno" ]]; then STATIC=" -static --all-static"; fi ], [])
 AC_SUBST(STATIC)
 
 AC_MSG_CHECKING(wether to compile static or shared)
@@ -157,6 +123,12 @@ else
 fi
 
 dnl ---------------------------------------------------------------------------
+dnl Checks if we can compile and link against OpenSSL. Does a check
+dnl against the headers, trying different standard paths for the installation
+dnl of the include/openssl/... files. Then does the same with the libraries.
+dnl
+dnl After this is done, LIBSSL and INCLUDESSL are either empty, or they
+dnl contain the paths of the headers and libs.
 
 AC_ARG_WITH(openssl-lib,
 	 AC_HELP_STRING([--with-openssl-lib], [Set path to OpenSSL libraries]),
@@ -173,7 +145,6 @@ AC_HELP_STRING([--without-ssl], [Disable SSL support]),
             WITH_SSL=1)
 
 if [[ "$WITH_SSL" = "1" ]]; then
-  AC_LANG_CPLUSPLUS
   AC_MSG_CHECKING(whether -lsocket is available)
   export LDTMP=$LIBS
   export LIBS="$LIBS -lsocket"
@@ -182,7 +153,7 @@ if [[ "$WITH_SSL" = "1" ]]; then
 
   AC_MSG_CHECKING(for OpenSSL includes)
   export CXXTMP=$CXXFLAGS
-  for k in found $SSLINCLUDEPATH /usr/include /usr/local/include /usr/local/ssl/include /usr/local/openssl/include /opt/ssl/include /opt/openssl/include; do
+  for k in . $SSLINCLUDEPATH /usr/include /usr/local/include /usr/local/ssl/include /usr/local/openssl/include /opt/ssl/include /opt/openssl/include; do
       export CXXFLAGS="$CXXTMP -I$k"
       AC_TRY_COMPILE([#include <openssl/ssl.h>], [SSL_write(0, 0, 0);], INCLUDESSL="-I$k"; AC_MSG_RESULT($k), [])
       if [[ "x$INCLUDESSL" != "x" ]]; then break; fi
@@ -196,10 +167,10 @@ if [[ "$WITH_SSL" = "1" ]]; then
   AC_MSG_CHECKING(for OpenSSL libraries)
   export LIBTMP=$LIBS
   export LDTMP=$LDFLAGS
-  for k in found $SSLLIBPATH /usr/lib /usr/local/lib /usr/local/ssl/lib /usr/local/openssl/lib /opt/ssl/lib /opt/openssl/lib; do
+  for k in . $SSLLIBPATH /usr/lib /usr/local/lib /usr/local/ssl/lib /usr/local/openssl/lib /opt/ssl/lib /opt/openssl/lib; do
       export LDFLAGS="$LDTMP -L$k"
       export LIBS="$LIBTMP -lssl -lcrypto $LIBSOCKET"
-      AC_TRY_LINK([#include <openssl/ssl.h>], [SSL_write(0, 0, 0);], LIBSSL="-L$k -lssl -lcrypto $LIBSOCKET"; AC_MSG_RESULT($k), [])
+      AC_TRY_LINK([#include <openssl/ssl.h>], [SSL_write(0, 0, 0);], LIBSSL="-L$k -lssl -lcrypto $LIBSOCKET"; AC_MSG_RESULT($k), []) 
       if [[ "x$LIBSSL" != "x" ]]; then break; fi
   done
   export LIBS=$LIBTMP
@@ -211,8 +182,6 @@ if [[ "$WITH_SSL" = "1" ]]; then
   else
       AC_DEFINE(WITH_SSL, 1, [Define to 1 if SSL support is included.])
   fi
-
-  AC_LANG_C
 else
   AC_MSG_RESULT(no)
 fi
@@ -220,26 +189,11 @@ AC_SUBST(LIBSSL)
 
 dnl ---------------------------------------------------------------------------
 
-AC_CHECK_LIB(dl, dlopen, LIBDL=-ldl, LIBDL=)
-AC_SUBST(LIBDL)
-
-dnl ---------------------------------------------------------------------------
-
-dnl Checks
-AC_LANG_CPLUSPLUS
-AC_MSG_CHECKING(whether to include <sstream> or <strstream>)
-AC_TRY_COMPILE([#include <sstream>], [], AC_MSG_RESULT([<sstream>]); AC_DEFINE(HAVE_SSTREAM,, [support for sstream]), AC_MSG_RESULT([<strstream>]))
-
-AC_MSG_CHECKING(whether to include <ostream> or <ostream.h>)
-AC_TRY_COMPILE([#include <ostream>], [], AC_MSG_RESULT([<ostream>]); AC_DEFINE(HAVE_OSTREAM,, [support for ostream]), AC_MSG_RESULT([<ostream.h>]))
-
 AC_MSG_CHECKING(whether O_LARGEFILE is defined)
 AC_TRY_COMPILE([  #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 int i = O_LARGEFILE;], [], AC_MSG_RESULT([yes]); AC_DEFINE(HAVE_OLARGEFILE,, [support for O_LARGEFILE]), AC_MSG_RESULT([no]))
-
-AC_LANG_C
 
 dnl ---------------------------------------------------------------------------
 

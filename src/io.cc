@@ -36,11 +36,6 @@
 #endif
 
 #include <string>
-#ifdef HAVE_OSTREAM
-#include <ostream>
-#else
-#include <ostream.h>
-#endif
 
 #include "session.h"
 #include "io.h"

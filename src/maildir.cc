@@ -60,6 +60,9 @@
 using namespace ::std;
 using namespace Binc;
 
+// Used to generate the unique names for Maildir delivery
+static int numDeliveries = 0;
+
 //------------------------------------------------------------------------
 Maildir::iterator::iterator(void)
 {
@@ -506,16 +509,17 @@ bool Maildir::commitNewMessages(const string &mbox)
   vector<MaildirMessage>::iterator i = newMessages.begin();
   map<MaildirMessage *, string> committedMessages;
 
-  char hostname[512];
-  int hostnamelen = gethostname(hostname, sizeof(hostname));
-  if (hostnamelen == -1 || hostnamelen == sizeof(hostname))
-    strcpy(hostname, "localhost");
-
   struct timeval youngestFile = {0, 0};
   
   bool abort = false;
   while (!abort && i != newMessages.end()) {
     MaildirMessage &m = *i;
+
+    if (m.getInternalFlags() & MaildirMessage::Committed)
+      continue;
+
+    m.setInternalFlag(MaildirMessage::Committed);
+
     string safeName = m.getSafeName();
 
     for (int attempt = 0; !abort && attempt < 1000; ++attempt) {
@@ -523,12 +527,14 @@ bool Maildir::commitNewMessages(const string &mbox)
       gettimeofday(&tv, 0);
       youngestFile = tv;
 
+      // Generate Maildir conformant file name
       BincStream ssid;
-      ssid << (int) tv.tv_sec
-	   << "." << (int) session.getPid()
-	   << (attempt == 0 ? "" : ("_" + toString(attempt)))
-	   << "_" << (int) tv.tv_usec
-	   << (rand() % 0xffff) << "_BincIMAP." << session.getHostname();
+      ssid  << (int) tv.tv_sec << "."
+	    << "R" << (int) rand()
+	    << "M" << (int) tv.tv_usec
+	    << "P" << session.getPid()
+	    << "Q" << numDeliveries++
+	    << "." << session.getHostname();
       
       BincStream ss;
       ss << mbox << "/new/" << ssid.str();
@@ -598,7 +604,7 @@ bool Maildir::commitNewMessages(const string &mbox)
 
   // cover the extremely unlikely event that another concurrent
   // Maildir accessor has just made a file with the same timestamp and
-  // random number by sleeping until the timestamp has changed before
+  // random number by spinning until the timestamp has changed before
   // moving the message into cur.
   struct timeval tv;
   gettimeofday(&tv, 0);
@@ -630,7 +636,6 @@ bool Maildir::commitNewMessages(const string &mbox)
   }
 
   committedMessages.clear();
-  newMessages.clear();
   return true;
 }
 
@@ -644,7 +649,6 @@ bool Maildir::rollBackNewMessages(void)
     unlink((*i).getSafeName().c_str());
 
   newMessages.clear();
-
   return true;
 }
 
@@ -678,12 +682,14 @@ bool Maildir::fastCopy(Message &m, Mailbox &desttype,
     struct timeval tv;
     gettimeofday(&tv, 0);
 
+    // Generate Maildir conformant file name
     BincStream ssid;
-    ssid << (int) tv.tv_sec
-	 << "." << (int) session.getPid()
-	 << (attempt == 0 ? "" : ("_" + toString(attempt)))
-	 << "_" << (int) tv.tv_usec 
-	 << (rand() % 0xffff) << "_BincIMAP." << session.getHostname();
+    ssid  << (int) tv.tv_sec << "."
+	  << "R" << (int) rand()
+	  << "M" << (int) tv.tv_usec
+	  << "P" << session.getPid()
+	  << "Q" << numDeliveries++
+	  << "." << session.getHostname();
 
     BincStream ss;
     ss << destname << "/tmp/" << ssid.str();

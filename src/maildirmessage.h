@@ -267,7 +267,8 @@ namespace Binc {
       Expunged = 0x01,
       FlagsChanged = 0x02,
       JustArrived = 0x04,
-      WasWrittenTo = 0x08
+      WasWrittenTo = 0x08,
+      Committed = 0x10      
     };
 
   protected:

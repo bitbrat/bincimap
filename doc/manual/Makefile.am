@@ -25,12 +25,13 @@ bincimap-manual.dvi: bincimap-manual.tex
 
 #--------------------------------------------------------------------------
 install-exec-hook:
-	$(mkinstalldirs) $(DESTDIR)$(prefix)/doc
-	$(INSTALL_DATA) $(srcdir)/bincimap-manual.ps $(DESTDIR)$(prefix)/doc
-	$(INSTALL_DATA) $(srcdir)/bincimap-manual.dvi $(DESTDIR)$(prefix)/doc
+	$(mkinstalldirs) $(DESTDIR)$(datadir)/doc/bincimap
+	$(INSTALL_DATA) $(srcdir)/bincimap-manual.ps $(DESTDIR)$(datadir)/doc/bincimap
+	$(INSTALL_DATA) $(srcdir)/bincimap-manual.dvi $(DESTDIR)$(datadir)/doc/bincimap
 
 #--------------------------------------------------------------------------
 uninstall-hook:
-	rm -v $(DESTDIR)$(prefix)/doc/bincimap-manual.ps
-	rm -v $(DESTDIR)$(prefix)/doc/bincimap-manual.dvi
+	rm -v $(DESTDIR)$(datadir)/doc/bincimap/bincimap-manual.ps
+	rm -v $(DESTDIR)$(datadir)/doc/bincimap/bincimap-manual.dvi
+	-rmdir $(DESTDIR)$(datadir)/doc/bincimap
 

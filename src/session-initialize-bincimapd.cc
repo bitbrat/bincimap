@@ -39,7 +39,6 @@
 
 #include "broker.h"
 #include "maildir.h"
-#include "bincimapd-module.h"
 #include "depot.h"
 #include "io-ssl.h"
 #include "io.h"
@@ -55,8 +54,6 @@ using namespace ::std;
 using namespace Binc;
 
 extern char **environ;
-
-vector<BincModule> modules;
 
 namespace {
   //------------------------------------------------------------------------
@@ -247,25 +244,6 @@ bool Session::initialize(int argc, char *argv[])
   session.loadSubscribes();
 
   session.setState(Session::AUTHENTICATED);
-
-  // Loadable modules 
-
-  // Not implemented yet -- use absolute paths for modules
-  // vector<string> tmp_mods;
-  // split(session.globalconfig["module path"], ":", tmp_mods);
-
-//   string k, v;
-//   if (session.globalconfig.getFirstEntry(k, v)) {
-//     do {
-//       if (k.substr(0,14) == "define module ") {
-// 	BincModule module;
-// 	if (module.open(v))
-// 	  modules.push_back(module);
-// 	else
-// 	  logger << "Warning: " << module.getLastError() << endl;
-//       }
-//     } while (session.globalconfig.getNextEntry(k, v));
-//   }
 
   // Read timeout settings from global config
   idletimeout = atoi(session.globalconfig["Session"]["idle timeout"]);

@@ -27,10 +27,10 @@ Note that command line arguments always override config file options.
 
 .SH "OPTIONS"
 
-As of version 1.1.6, bincimapd only optionally takes command line
-options. The default behavior is to inherits options from bincimap-up
-through the environment. Passing arguments to bincimapd will override
-settings inherited from bincimap-up.
+Command line arguments are optional. The default behavior is to
+inherit options from bincimap-up through the environment. Passing
+arguments to bincimapd will override settings inherited from
+bincimap-up.
 
 For a complete listing of options for bincimapd, see the bincimap-up
 man page.
@@ -96,7 +96,7 @@ Note that it is essential that the authenticator invoked by
 bincimap-up does not clear the environment.
 
 .SH "COPYRIGHT"
-Copyright (C) 2002, 2003 Andreas Aardal Hanssen
+Copyright (C) 2002-2004 Andreas Aardal Hanssen
 
 This is free software; see the source for copying conditions. There is
 NO warranty.
@@ -111,17 +111,21 @@ to browse.
 
 .RS
 .nf
-Mailing list: <lists-bincimap@infeline.org>
+Mailing list: <binc@bincimap.org>
+Developers' mailing list: <binc-dev@bincimap.org>
+Announcements list: <binc-news@bincimap.org>
+
+Subscribing to a mailing list: <binc-subscribe@bincimap.org>
 Home page: http://www.bincimap.org/
 .fi
 .RE
 
 .SH "AUTHOR"
-Andreas Aardal Hanssen <bincimap@andreas.hanssen.name>
+Andreas Aardal Hanssen <andreas-binc@bincimap.org>
 
 .RE
 .SH "SEE ALSO"
-bincimapd.conf(5) bincimap-up(1) multilog(8) supervise(8) tcpserver(1) xinetd(8) xinetd.conf(5)
+multilog(8) supervise(8) tcpserver(1) bincimapd.conf(5) bincimap-up(1) xinetd(8) xinetd.conf(5)
 
 .B Note:
 The first three man pages are available for download from

@@ -433,6 +433,11 @@ const std::string &Session::getHostname(void)
     if (hostnamelen == -1 || hostnamelen == sizeof(hostnamec))
       strcpy(hostnamec, "localhost");
     hostnamec[511] = '\0';
+
+    char *c;
+    while ((c = strchr(hostnamec, '/')) != 0) *c = '\057';
+    while ((c = strchr(hostnamec, ':')) != 0) *c = '\072';
+    
     hostname = hostnamec;
   }
 
