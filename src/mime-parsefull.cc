@@ -238,6 +238,7 @@ int Binc::MimePart::parseFull(const string &toboundary, int &boundarysize) const
   // CRLF.
   headerlength = crlfoffset - headerstartoffsetcrlf;
   bodystartoffsetcrlf = crlfoffset;
+  bodylength = 0;
 
   // If we encounter the end of file, we return 1 as if we found our
   // parent's terminal boundary. This will cause a safe exit, and
@@ -312,9 +313,9 @@ int Binc::MimePart::parseFull(const string &toboundary, int &boundarysize) const
 
     // make sure bodylength doesn't overflow    
     bodylength = crlfoffset;
-    if (bodylength > bodystartoffsetcrlf) {
+    if (bodylength >= bodystartoffsetcrlf) {
       bodylength -= bodystartoffsetcrlf;
-      if (bodylength > (unsigned int) bsize) {
+      if (bodylength >= (unsigned int) bsize) {
 	bodylength -= (unsigned int) bsize;
       } else {
 	bodylength = 0;
@@ -424,9 +425,9 @@ int Binc::MimePart::parseFull(const string &toboundary, int &boundarysize) const
 
     // make sure bodylength doesn't overflow    
     bodylength = crlfoffset;
-    if (bodylength > bodystartoffsetcrlf) {
+    if (bodylength >= bodystartoffsetcrlf) {
       bodylength -= bodystartoffsetcrlf;
-      if (bodylength > (unsigned int) boundarysize) {
+      if (bodylength >= (unsigned int) boundarysize) {
 	bodylength -= (unsigned int) boundarysize;
       } else {
 	bodylength = 0;
@@ -642,9 +643,9 @@ int Binc::MimePart::parseFull(const string &toboundary, int &boundarysize) const
 
     // make sure bodylength doesn't overflow    
     bodylength = crlfoffset;
-    if (bodylength > bodystartoffsetcrlf) {
+    if (bodylength >= bodystartoffsetcrlf) {
       bodylength -= bodystartoffsetcrlf;
-      if (bodylength > (unsigned int) boundarysize) {
+      if (bodylength >= (unsigned int) boundarysize) {
 	bodylength -= (unsigned int) boundarysize;
       } else {
 	bodylength = 0;
