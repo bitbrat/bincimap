@@ -135,10 +135,14 @@ bool SSLEnabledIO::setModeSSL(void)
     return false;
   }
 
-  if (!SSL_CTX_load_verify_locations(ctx, CAfile.c_str(), CApath.c_str())) {
-    setLastError("SSL error: unable to load CA file or path: "
-		 + string(ERR_error_string(ERR_get_error(), 0)));
-    return false;
+  const char *CAfileptr = CAfile == "" ? 0 : CAfile.c_str();
+  const char *CApathptr = CApath == "" ? 0 : CApath.c_str();
+  if (CAfileptr || CApathptr) {
+    if (!SSL_CTX_load_verify_locations(ctx, CAfileptr, CApathptr)) {
+      setLastError("SSL error: unable to load CA file or path: "
+		   + string(ERR_error_string(ERR_get_error(), 0)));
+      return false;
+    }
   }
 
   if (session.globalconfig["SSL"]["verify peer"] == "yes")
