@@ -207,81 +207,26 @@ namespace Binc {
       Returns the first occurrance of a MIME header in a message,
       counting from the top of the message and downwards, or "" if no
       such header is found.
-
       \param header The name of the header to be fetched.
     */
     const std::string &getHeader(const std::string &header);
 
-    /*!
-      Returns true if the message has a certain header that contains a
-      certain text; otherwise returns false. Used when searching
-      messages.
-
-      \param header The name of the header to search in.
-      \param text The text to search for.
-    */
     bool headerContains(const std::string &header,
 			const std::string &text);
 
-    /*!
-      Returns true if the body of the message contains a certain text;
-      otherwise returns false;
-
-      \param text The text to search for.
-    */
     bool bodyContains(const std::string &text);
-
-    /*!
-      Returns true if the header or body of the message contains a
-      certain text; otherwise returns false.
-
-      \param text The text to search for.
-    */
     bool textContains(const std::string &text);
 
-    /*!
-      Prints the IMAP body structure of the message to the client.
-
-      \param extended If true, the extended body structure is also
-      printed.
-    */
     bool printBodyStructure(bool extended = true) const;
 
-    /*!
-      Prints the IMAP envelope of the message to the client.
-    */
     bool printEnvelope(void) const;
 
-    /*!
-      Prints headers of the message.
-
-      \param section If empty, the root level mime part's headers are
-      printed; otherwise this string is interpreted as a MIME part,
-      and the headers of that part are printed.
-      \param headers A list of headers to include or exclude,
-      depending on the value of includeHeaders.
-      \param includeHeaders If true, only the headers in the "headers"
-      argument are printed; otherwise any headers but those in the
-      "headers" argument are printed.
-      \param startOffset Describes at what character offset the
-      printing of headers should start.
-      \param length Limits the number of characters to print.
-      \param mime If true, the headers of the encapsulating part of an
-      enclosed rfc822 message is printed; otherwise the enclosed
-      message's headers are printed.
-    */
     bool printHeader(const std::string &section,
 		     std::vector<std::string> headers,
 		     bool includeHeaders = false,
 		     unsigned int startOffset = 0,
 		     unsigned int length = UINTMAX,
 		     bool mime = false) const;
-
-    /*!
-      Determines the number of bytes that will be printed by
-      printHeader().  All arguments are the same as with
-      printHeader().
-    */
     unsigned int getHeaderSize(const std::string &section,
 			       std::vector<std::string> headers,
 			       bool includeHeaders = false,
@@ -289,108 +234,33 @@ namespace Binc {
 			       unsigned int length = UINTMAX,
 			       bool mime = false) const;
     
-    /*!
-      Prints body parts of a message.
-
-      \param section If empty, the root level mime part's headers are
-      printed; otherwise this string is interpreted as a MIME part,
-      and the headers of that part are printed.
-      \param startOffset Describes at what character offset the
-      printing should start.
-      \param length Limits the number of characters to print.
-    */
     bool printBody(const std::string &section = "",
 		   unsigned int startOffset = 0,
 		   unsigned int length = UINTMAX) const;
-
-    /*!
-      Determines the number of bytes that will be printed by
-      printBody().  All arguments are the same as with
-      printBody().
-    */
     unsigned int getBodySize(const std::string &section,
 			     unsigned int startOffset = 0,
 			     unsigned int length = UINTMAX) const;
     
-    /*!
-      Prints the whole message raw.
-
-      \param startOffset Describes at what character offset the
-      printing should start.
-      \param length Limits the number of characters to print.
-    */
     bool printDoc(unsigned int startOffset = 0,
 		  unsigned int length = UINTMAX,
 		  bool onlyText = false) const;
-
-    /*!
-      Determines the number of bytes that will be printed by
-      printDoc().  All arguments are the same as with
-      printDoc().
-    */
     unsigned int getDocSize(unsigned int startOffset = 0,
 			    unsigned int length = UINTMAX,
 			    bool onlyText = false) const;
 
-    /*!
-      Sets the unique part of this Maildir message's file name.
-
-      \param s_in The unique part of the message's file name.
-    */
     void setUnique(const std::string &s_in);
-
-    /*!
-      Returns the unique part of this Maildir message's file name.
-    */
     const std::string &getUnique(void) const;
 
-    /*!
-      Sets the temporary file name of this message. Used when creating
-      a bundle of new message, when it's practical to remember the
-      safe names so that it's easier to clean up afterwards.
-    */
-    void setSafeName(const std::string &name);
-
-    /*!
-      Returns the safe name of this message.
-    */
-    const std::string &getSafeName(void) const;
-
-    /*!
-      Constructs a MaildirMessage.
-
-      \param home The Maildir that owns this message.
-    */
+    //--
     MaildirMessage(Maildir &home);
-
-    /*!
-      Constructs a copy of a MaildirMessage.
-
-      \param copy The new MaildirMessage will become a copy of this
-      MaildirMessage.
-    */
-    MaildirMessage(const MaildirMessage &copy);
-
-    /*!
-      Make this MaildirMessage a copy of another MaildirMessage.
-
-      \param copy The original MaildirMessage will become a copy of
-      this MaildirMessage.
-    */
-    MaildirMessage &operator = (const MaildirMessage &copy);
-
-    /*!
-      Destructs this MaildirMessage.
-    */
     ~MaildirMessage(void);
 
     friend class Maildir;
 
-    /*!
-      This operator is used to sort messages in a Maildir by their UID
-      value.
-    */
     bool operator < (const MaildirMessage &a) const;
+
+    MaildirMessage(const MaildirMessage &copy);
+    MaildirMessage &operator = (const MaildirMessage &copy);
 
     enum Flags {
       None = 0x00,
@@ -401,35 +271,17 @@ namespace Binc {
     };
 
   protected:
-    /*!
-      Triggers a parse of the whole MIME message unless it has already
-      been parsed.
-     */
     bool parseFull(void) const;
-
-    /*!
-      Triggers a parse of only the first headers of the MIME message,
-      unless this message has already been parsed.
-    */
     bool parseHeaders(void) const;
 
-    /*!
-      Returns the last known filename for this message.
-    */
+    std::string getFixedFilename(void) const;
     std::string getFileName(void) const;
 
-    /*!
-      Sets the file descriptor of this Message.
-
-      \param fd The file descriptor.
-    */
     void setFile(int fd);
-
-    /*!
-      Returns the file descriptor of this message; implicitly opening
-      it if it's not already open.
-    */
     int getFile(void) const;
+
+    void setSafeName(const std::string &name);
+    const std::string &getSafeName(void) const;
 
   private:
     mutable int fd;
@@ -446,21 +298,7 @@ namespace Binc {
     static std::string storage;
   };
 
-  /*!
-    \class MaildirMessageCache
-    \brief The MaildirMessageCache class provides a place to
-    store the status of a MaildirMessage.
-
-    Currently, the status that can be stored is whether the file is
-    unparsed, has only its headers parsed or whether the whole message
-    has been parsed.
-
-    When the cache is full, the oldest MaildirMessage is removed. If
-    this message is open, it is closed.
-
-    \sa MaildirMessage
-  */
-
+  //------------------------------------------------------------------------
   class MaildirMessageCache
   {
   public:
@@ -472,47 +310,14 @@ namespace Binc {
       AllParsed
     };
 
-    /*!
-      Returns a reference to the MaildirMessageCache singleton.
-    */
     static MaildirMessageCache &getInstance(void);
 
-    /*!
-      Adds a MaildirMessage reference to the cache, with a certain status.
-      If the reference already exists in the cache, its status is updated.
-
-      \param message A point to the MaildirMessage whose status is stored.
-      \param status The status of the message.
-    */
-    void addStatus(const MaildirMessage *message, ParseStatus status);
-
-    /*!
-      Gets the status of a MaildirMessage.
-
-      \param message A point to the MaildirMessage whose status is fetched.
-    */
-    ParseStatus getStatus(const MaildirMessage *message) const;
-    
-    /*!
-      Removes the status of a MaildirMessage from the cache, and
-      closes the message if it's open.
-
-      \param message A point to the MaildirMessage whose status is removed.    
-    */
-    void removeStatus(const MaildirMessage *message);
-
-    /*!
-      Remove the status of all messages in the cache, closing them if
-      they're open.
-    */
+    void removeStatus(const MaildirMessage *);
+    void addStatus(const MaildirMessage *, ParseStatus pstat);
+    ParseStatus getStatus(const MaildirMessage *) const;
     void clear(void);
 
   private:
-    /*!
-      Constructs a MaildirMessageCache. There must always only be one
-      cache, therefore this object is a singleton and must be accessed
-      via getInstance().
-    */
     MaildirMessageCache();
 
     mutable std::map<const MaildirMessage *, ParseStatus> statuses;
