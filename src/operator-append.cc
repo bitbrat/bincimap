@@ -240,7 +240,8 @@ Operator::ProcessResult AppendOperator::process(Depot &depot,
 
   if (mailbox == depot.getSelected()) {
     pendingUpdates(mailbox, PendingUpdates::EXISTS
-		       | PendingUpdates::RECENT, true);
+		   | PendingUpdates::RECENT 
+		   | PendingUpdates::FLAGS, true);
   }
 
   return OK;
