@@ -195,6 +195,7 @@ bool Session::parseRequestLine(int argc, char * argv[])
   args.addOptional("I|ip-variable",
 		   globalconfig["Log"]["environment ip variable"]);
 
+  args.addOptional("d|depot", globalconfig["Mailbox"]["depot"]);
   args.addOptional("M|mailbox-type", globalconfig["Mailbox"]["type"]);
   args.addOptional("m|mailbox-path", globalconfig["Mailbox"]["path"]);
   args.addOptional("C|create-inbox", globalconfig["Mailbox"]["auto create inbox"]);
