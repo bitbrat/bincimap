@@ -119,7 +119,7 @@ namespace Binc {
     bool newrecent;
   };
 
-  bool Binc::pendingUpdates(Mailbox *, int type, bool rescan);
+  bool Binc::pendingUpdates(Mailbox *, int type, bool rescan, bool showAll = false);
 }
 
 #endif

@@ -206,7 +206,7 @@ unsigned int PendingUpdates::flagupdates_const_iterator::second(void) const
 }
 
 //--------------------------------------------------------------------
-bool Binc::pendingUpdates(Mailbox *mailbox, int type, bool rescan)
+bool Binc::pendingUpdates(Mailbox *mailbox, int type, bool rescan, bool showAll)
 {
   Session &session = Session::getInstance();
   IO &com = IOFactory::getInstance().get(1);
@@ -230,10 +230,10 @@ bool Binc::pendingUpdates(Mailbox *mailbox, int type, bool rescan)
     }
   }
 
-  if ((type & PendingUpdates::EXISTS) && p.newExists())
+  if (((type & PendingUpdates::EXISTS) && p.newExists()) || showAll)
     com << "* " << p.getExists() << " EXISTS" << endl;
 
-  if ((type & PendingUpdates::RECENT) && p.newRecent())
+  if (((type & PendingUpdates::RECENT) && p.newRecent() || showAll))
     com << "* " << p.getRecent() << " RECENT" << endl;
 
   if (type & PendingUpdates::FLAGS) {

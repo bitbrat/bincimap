@@ -119,7 +119,7 @@ Operator::ProcessResult SelectOperator::process(Depot &depot,
   // re-scan.
   pendingUpdates(mailbox, PendingUpdates::EXISTS 
 		 | PendingUpdates::RECENT,
-		 false);
+		 false, true);
 
   // unseen
   if (unseen != -1)
