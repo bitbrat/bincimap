@@ -108,6 +108,9 @@ SSL {
     ca file = "",                                  /* file to use as
                                                       certificate
                                                       authority */
+    ca path = "",                                  /* path to search
+                                                      for more certificate
+                                                      authorities */
 
     cipher list = "!ADH:RC4+RSA:HIGH:MEDIUM:LOW:EXP:+SSLv2:+EXP",
 
