@@ -239,11 +239,8 @@ Operator::ProcessResult AppendOperator::process(Depot &depot,
   }
 
   if (mailbox == depot.getSelected()) {
-    if(!pendingUpdates(mailbox, PendingUpdates::EXISTS
-		       | PendingUpdates::RECENT, true)) {
-      session.setLastError("Pending Updates failed");
-      return NO;
-    }
+    pendingUpdates(mailbox, PendingUpdates::EXISTS
+		       | PendingUpdates::RECENT, true);
   }
 
   return OK;
