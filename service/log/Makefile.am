@@ -9,16 +9,14 @@
 # USA.
 
 #--------------------------------------------------------------------------
-EXTRA_DIST=run run-ssl down
+EXTRA_DIST=run run-ssl
 
 #--------------------------------------------------------------------------
 install-exec-hook:
 	$(mkinstalldirs) $(DESTDIR)$(localstatedir)/service/imap/log
 	@if [ ! -e $(DESTDIR)$(localstatedir)/service/imap/log/run ]; then $(INSTALL_SCRIPT) -m 0755 $(srcdir)/run $(DESTDIR)$(localstatedir)/service/imap/log/run;  else $(INSTALL_SCRIPT) -m 0755 $(srcdir)/run $(DESTDIR)$(localstatedir)/service/imap/log/run.new; echo "- New service/imap/run file saved as $(DESTDIR)$(localstatedir)/service/imap/log/run.new" >> $(srcdir)/../../install.log; fi
-	$(INSTALL_SCRIPT) -m 0644 $(srcdir)/down $(DESTDIR)$(localstatedir)/service/imap/log/down
 	$(mkinstalldirs) $(DESTDIR)$(localstatedir)/service/imaps/log
 	@if [ ! -e $(DESTDIR)$(localstatedir)/service/imaps/log/run ]; then $(INSTALL_SCRIPT) -m 0755 $(srcdir)/run-ssl $(DESTDIR)$(localstatedir)/service/imaps/log/run;  else $(INSTALL_SCRIPT) -m 0755 $(srcdir)/run-ssl $(DESTDIR)$(localstatedir)/service/imaps/log/run.new; echo "- New service/imaps/run file saved as $(DESTDIR)$(localstatedir)/service/imaps/log/run.new" >> $(srcdir)/../../install.log; fi;
-	$(INSTALL_SCRIPT) -m 0644 $(srcdir)/down $(DESTDIR)$(localstatedir)/service/imaps/log/down
 	$(mkinstalldirs) $(DESTDIR)$(localstatedir)/log/bincimap
 	$(mkinstalldirs) $(DESTDIR)$(localstatedir)/log/bincimap-ssl
 
