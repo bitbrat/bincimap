@@ -75,7 +75,7 @@ Binc IMAP is released under the GNU General Public License.
 #-----------------------------------------------------------------------
 %build
 
-STATIC=--enable-static
+STATIC=
 
 CXXFLAGS="-O2 -s -I/usr/kerberos/include"
 %configure $STATIC --prefix=/opt/@PACKAGE@ --sysconfdir=/etc/opt/@PACKAGE@ --localstatedir=/var/opt
@@ -188,6 +188,49 @@ install man/bincimap.conf.5	$MAN/man5
 
 #-----------------------------------------------------------------------
 %changelog
+
+* Tue Feb 03 2004 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
+- Obfuscated email addresses in AUTHORS and sources files.
+- Removed tests directory from distribution
+- Moved xinetd and service scripts to localstatedir, which defaults
+  to /var/opt/bincimap. This has not yet been enabled in the RPM
+  files.
+- Fixed the checks for the OpenSSL libraries. It now also attempts to
+  link OpenSSL, and searches several standard locations.
+- The configure script now treats --enable-static and --disable-static
+  properly.
+- Cleaned up configure.in somewhat
+- Added "ca path" to bincimap.conf and command line options.
+- The new "ca path" and "ca file" options are now used to read CA
+  certificates. This did not work properly before.
+- Updated man pages with these new changes.
+- Added proper handling for systems that use <sys/wait.h> instead of
+  <wait.h>.
+- Increased internal transfer buffer size from 1024 bytes to 8192 bytes.
+- Added a fix in io-ssl.cc which only does a select on stdin if
+  SSL_pending() returns 0. This prevents a lockup in APPEND, among
+  others.
+- A fix in maildir-readcache.cc handles empty mailboxes properly,
+  also when the cache files are missing.  
+- The cache files are always generated on first select, unless the
+  mailbox is selected in read-only mode (EXAMINE).
+- Improved documentation and logging in maildir-scan.cc.
+- Speedup in copying of files. We no longer wait 1 second for each
+  copy, but only as many microseconds as necessary for ensuring that our
+  own file names do not collide. We still wait one second before moving
+  external new/ messages into cur/.
+- Bumped cache file format because of a regression introduced in 1.2.4
+  which miscalculated message sizes, causing lockups.
+- Fixed the bug that miscalculated message sizes.
+- Fixed mime-printheader.cc. The merge of the output of BODY[TEXT]
+  and BODY[HEADER] is now exactly the output of BODY[], and its size
+  is the same as RFC822.SIZE.
+- Fixed a bug in APPEND where months were stored off-by-one.
+- APPEND now reads chunks of 8192 bytes instead of 1024.
+- Improved algorithm in APPEND make the code easier to read and
+  maintain.
+- Added --depot=[Maildir++|IMAPdir] command line option.
+- 1.2.6beta5-1
 
 * Tue Jan 20 2004 Andreas Aardal Hanssen <andreas-binc@bincimap.org>
 - Removed time_t <-> int implicit conversion and overload ambiguity.
