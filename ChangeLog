@@ -11,6 +11,8 @@
   Messages with BincIMAP in their name are always moved from new/
   immediately, otherwise the timestamp is checked.
 - Released 1.2.7beta3-1
+- Typo in operator-append.cc fixed.
+- Released 1.2.7beta4-1
 
 * Tue Mar 02 2004 Andreas Aardal Hanssen <andreas-binc at bincimap.org>
 - COPY now uses the canonical form of the destination mailbox, so copying
